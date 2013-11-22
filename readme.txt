@@ -2,8 +2,8 @@
 Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
-Tested up to: 3.7
-Stable tag: 2.5.3
+Tested up to: 3.8
+Stable tag: 2.5.4
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -109,6 +109,12 @@ Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordp
 I know!
 
 == Changelog ==
+
+= 2.5.4 =
+* Avoid a fatal error when strict errors are triggered at compile time
+* Avoid a warning when PDO or Mysqli is in use
+* Updated CSS for WordPress 3.8. Retains support for default 3.7 and MP6 on 3.7
+* Tweak PHP error_reporting in the Environment component
 
 = 2.5.3 =
 * Show an inline error when a hook has an invalid action
