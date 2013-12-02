@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 2.5.4
+Stable tag: 2.5.5
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -109,6 +109,11 @@ Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordp
 I know!
 
 == Changelog ==
+
+= 2.5.5 =
+* Better layout for the Hooks panel
+* Fix some AJAX issues
+* Fix some output buffer compatibility issues which were causing fatal errors
 
 = 2.5.4 =
 * Avoid a fatal error when strict errors are triggered at compile time
