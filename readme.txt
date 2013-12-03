@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 2.5.5
+Stable tag: 2.5.6
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -109,6 +109,9 @@ Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordp
 I know!
 
 == Changelog ==
+
+= 2.5.6 =
+* Fix the "Invalid header" issue. Woo!
 
 = 2.5.5 =
 * Better layout for the Hooks panel
