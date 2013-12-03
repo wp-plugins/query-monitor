@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.5.5
+Version:     2.5.6
 Plugin URI:  https://github.com/johnbillion/QueryMonitor
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -229,6 +229,13 @@ class QueryMonitor extends QM_Plugin {
 			'query-monitor',
 			'qm_locale',
 			(array) $wp_locale
+		);
+		wp_localize_script(
+			'query-monitor',
+			'qm_l10n',
+			array(
+				'ajax_error' => __( 'PHP Error in AJAX Response', 'query-monitor' ),
+			)
 		);
 
 	}
