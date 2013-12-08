@@ -104,7 +104,13 @@ Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordp
 
 == Screenshots ==
 
-1. An example of Query Monitor's output
+1. The admin toolbar menu showing an overview
+2. Aggregate database queries by component
+3. Slow database queries highlighted in a separate panel
+4. Database queries complete with filter controls
+5. Hooks and actions
+6. HTTP requests (showing an HTTP error)
+7. Aggregate database queries grouped by calling function
 
 == Frequently Asked Questions ==
 
