@@ -1,5 +1,6 @@
 <?php
 /*
+
 Copyright 2013 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
@@ -14,22 +15,19 @@ GNU General Public License for more details.
 
 */
 
-function qm_autoloader( $class ) {
+class QM_Output_Headers implements QM_Output {
 
-	if ( 0 !== strpos( $class, 'QM_' ) )
-		return;
+	public function __construct( QM_Collector $collector ) {
+		$this->collector = $collector;
+	}
 
-	$name = preg_replace( '|^QM_|', '', $class );
-	$name = str_replace( '_', '/', $name );
+	public function output() {
+		# Headers output does nothing by default
+		return false;
+	}
 
-	$file = sprintf( '%1$s/%2$s.php',
-		dirname( __FILE__ ),
-		$name
-	);
-
-	if ( is_readable( $file ) )
-		include $file;
+	final public function get_type() {
+		return 'headers';
+	}
 
 }
-
-spl_autoload_register( 'qm_autoloader' );
