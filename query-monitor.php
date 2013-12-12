@@ -2,8 +2,8 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.1
-Plugin URI:  https://github.com/johnbillion/QueryMonitor
+Version:     2.6.2
+Plugin URI:  https://github.com/johnbillion/query-monitor
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
 Text Domain: query-monitor
@@ -32,18 +32,18 @@ foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util', 'Dispatcher', 'Outp
 
 class QueryMonitor extends QM_Plugin {
 
-	protected $collectors = array();
-	protected $dispatchers    = array();
-	protected $did_footer = false;
+	protected $collectors  = array();
+	protected $dispatchers = array();
+	protected $did_footer  = false;
 
 	protected function __construct( $file ) {
 
 		# Actions
 		add_action( 'init',           array( $this, 'action_init' ) );
-		add_action( 'admin_footer',   array( $this, 'action_footer' ), 999 );
-		add_action( 'wp_footer',      array( $this, 'action_footer' ), 999 );
-		add_action( 'login_footer',   array( $this, 'action_footer' ), 999 );
-		add_action( 'shutdown',       array( $this, 'action_shutdown' ), 0 );
+		add_action( 'admin_footer',   array( $this, 'action_footer' ) );
+		add_action( 'wp_footer',      array( $this, 'action_footer' ) );
+		add_action( 'login_footer',   array( $this, 'action_footer' ) );
+		add_action( 'shutdown',       array( $this, 'action_shutdown' ), 9999 );
 
 		# Filters
 		add_filter( 'pre_update_option_active_plugins',               array( $this, 'filter_active_plugins' ) );

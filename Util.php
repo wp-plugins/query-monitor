@@ -66,6 +66,10 @@ class QM_Util {
 
 	}
 
+	public static function get_file_dirs() {
+		return self::$file_dirs;
+	}
+
 	public static function get_file_component( $file ) {
 
 		# @TODO turn this into a class (eg QM_File_Component)
@@ -118,43 +122,6 @@ class QM_Util {
 
 	}
 
-	public static function get_backtrace_component( QM_Backtrace $backtrace ) {
-
-		# @TODO turn this into a class (eg QM_Trace_Component)
-
-		$components = array();
-
-		foreach ( $backtrace->get_trace() as $item ) {
-
-			try {
-
-				if ( isset( $item['file'] ) ) {
-					$file = $item['file'];
-				} else if ( isset( $item['class'] ) ) {
-					$ref = new ReflectionMethod( $item['class'], $item['function'] );
-					$file = $ref->getFileName();
-				} else {
-					$ref = new ReflectionFunction( $item['function'] );
-					$file = $ref->getFileName();
-				}
-
-				$comp = self::get_file_component( $file );
-				$components[$comp->type] = $comp;
-			} catch ( ReflectionException $e ) {
-				# nothing
-			}
-
-		}
-
-		foreach ( self::$file_dirs as $type => $dir ) {
-			if ( isset( $components[$type] ) )
-				return $components[$type];
-		}
-
-		# This should not happen
-
-	}
-
 	public static function populate_callback( array $callback ) {
 
 		$access = '->';
@@ -189,6 +156,8 @@ class QM_Util {
 
 			}
 
+			$callback['file']      = $ref->getFileName();
+			$callback['line']      = $ref->getStartLine();
 			$callback['component'] = self::get_file_component( $ref->getFileName() );
 
 		} catch ( ReflectionException $e ) {
@@ -229,7 +198,7 @@ class QM_Util {
 			'HAVING', 'INNER', 'INSERT', 'LIMIT', 'ON', 'OR', 'ORDER', 'REPLACE', 'ROLLBACK', 'SELECT', 'SET',
 			'SHOW', 'START', 'THEN', 'TRUNCATE', 'UPDATE', 'VALUES', 'WHEN', 'WHERE'
 		) as $cmd )
-			$sql = trim( str_replace( " $cmd ", "<br/>$cmd ", $sql ) );
+			$sql = trim( str_replace( " $cmd ", "<br>$cmd ", $sql ) );
 
 		return $sql;
 
@@ -249,8 +218,8 @@ class QM_Util {
 			'?',
 		), array(
 			'<span class="qm-equals">=</span>',
-			'<br /><span class="qm-param">&amp;</span>',
-			'<br /><span class="qm-param">?</span>',
+			'<br><span class="qm-param">&amp;</span>',
+			'<br><span class="qm-param">?</span>',
 		), $url );
 		return $url;
 	}

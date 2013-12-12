@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
 Tested up to: 3.8
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -119,6 +119,11 @@ Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordp
 I know!
 
 == Changelog ==
+
+= 2.6.2 =
+* Fix two fundamental stability and compatibility issues (great news)
+* Various visual tweaks
+* Handle some uncommon use cases of the HTTP API
 
 = 2.6.1 =
 * Remove a file that was accidentally committed to the wordpress.org repo

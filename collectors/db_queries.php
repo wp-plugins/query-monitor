@@ -157,10 +157,13 @@ class QM_Collector_DB_Queries extends QM_Collector {
 
 			$total_time += $ltime;
 
-			if ( isset( $query['trace'] ) )
-				$component = QM_Util::get_backtrace_component( $query['trace'] );
-			else
+			if ( isset( $query['trace'] ) ) {
+				$component = $query['trace']->get_component();
+				$trace     = $query['trace'];
+			} else {
 				$component = null;
+				$trace     = null;
+			}
 
 			# @TODO we should grab this from the trace instead for increased accuracy in case
 			# the caller contains multiple comma separated arguments (see QM_Backtrace::$show_args)
@@ -172,8 +175,7 @@ class QM_Collector_DB_Queries extends QM_Collector {
 			else
 				$caller_name = $caller;
 
-			# @TODO this formatting should move to JIT when outputting as html
-			$sql  = QM_Util::format_sql( $sql );
+			$sql  = trim( $sql );
 			$type = preg_split( '/\b/', $sql );
 			$type = strtoupper( $type[1] );
 
