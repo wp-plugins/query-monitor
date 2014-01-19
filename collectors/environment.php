@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -164,8 +164,8 @@ class QM_Collector_Environment extends QM_Collector {
 		# @TODO put WP's other debugging constants in here, eg. SCRIPT_DEBUG
 		$this->data['wp'] = array(
 			'version'      => $wp_version,
-			'WP_DEBUG'     => QM_Util::format_bool_constant( 'WP_DEBUG' ),
-			'WP_LOCAL_DEV' => QM_Util::format_bool_constant( 'WP_LOCAL_DEV' ),
+			'WP_DEBUG'     => self::format_bool_constant( 'WP_DEBUG' ),
+			'WP_LOCAL_DEV' => self::format_bool_constant( 'WP_LOCAL_DEV' ),
 		);
 
 		if ( is_multisite() )

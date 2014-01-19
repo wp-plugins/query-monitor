@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.2
+Version:     2.6.3
 Plugin URI:  https://github.com/johnbillion/query-monitor
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -10,7 +10,7 @@ Text Domain: query-monitor
 Domain Path: /languages/
 License:     GPL v2 or later
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,24 +26,24 @@ GNU General Public License for more details.
 
 defined( 'ABSPATH' ) or die();
 
+if ( defined( 'QM_DISABLED' ) and QM_DISABLED )
+	return;
+
 # No autoloaders for us. See https://github.com/johnbillion/QueryMonitor/issues/7
-foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util', 'Dispatcher', 'Output' ) as $f )
-	require_once dirname( __FILE__ ) . "/{$f}.php";
+$qm_dir = dirname( __FILE__ );
+foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util', 'Dispatcher', 'Output' ) as $qm_class )
+	require_once "{$qm_dir}/{$qm_class}.php";
 
 class QueryMonitor extends QM_Plugin {
 
 	protected $collectors  = array();
 	protected $dispatchers = array();
-	protected $did_footer  = false;
 
 	protected function __construct( $file ) {
 
 		# Actions
-		add_action( 'init',           array( $this, 'action_init' ) );
-		add_action( 'admin_footer',   array( $this, 'action_footer' ) );
-		add_action( 'wp_footer',      array( $this, 'action_footer' ) );
-		add_action( 'login_footer',   array( $this, 'action_footer' ) );
-		add_action( 'shutdown',       array( $this, 'action_shutdown' ), 9999 );
+		add_action( 'init',     array( $this, 'action_init' ) );
+		add_action( 'shutdown', array( $this, 'action_shutdown' ), 0 );
 
 		# Filters
 		add_filter( 'pre_update_option_active_plugins',               array( $this, 'filter_active_plugins' ) );
@@ -56,12 +56,14 @@ class QueryMonitor extends QM_Plugin {
 		# Parent setup:
 		parent::__construct( $file );
 
+		# Collectors:
 		foreach ( glob( $this->plugin_path( 'collectors/*.php' ) ) as $collector )
 			include $collector;
 
 		foreach ( apply_filters( 'query_monitor_collectors', array() ) as $collector )
 			$this->add_collector( $collector );
 
+		# Dispatchers:
 		foreach ( glob( $this->plugin_path( 'dispatchers/*.php' ) ) as $dispatcher )
 			include $dispatcher;
 
@@ -93,16 +95,12 @@ class QueryMonitor extends QM_Plugin {
 		return $this->dispatchers;
 	}
 
-	public function did_footer() {
-		return $this->did_footer;
-	}
-
 	public function activate( $sitewide = false ) {
 
 		if ( $admins = QM_Util::get_admins() )
 			$admins->add_cap( 'view_query_monitor' );
 
-		if ( ! file_exists( $db = WP_CONTENT_DIR . '/db.php' ) )
+		if ( ! file_exists( $db = WP_CONTENT_DIR . '/db.php' ) and function_exists( 'symlink' ) )
 			@symlink( $this->plugin_path( 'wp-content/db.php' ), $db );
 
 		if ( $sitewide )
@@ -123,41 +121,75 @@ class QueryMonitor extends QM_Plugin {
 
 	}
 
-	public function show_query_monitor() {
+	public function user_can_view() {
 
 		if ( !did_action( 'plugins_loaded' ) )
 			return false;
 
-		if ( isset( $this->show_query_monitor ) )
-			return $this->show_query_monitor;
-
-		if ( isset( $_REQUEST['wp_customize'] ) and 'on' == $_REQUEST['wp_customize'] )
-			return $this->show_query_monitor = false;
-
 		if ( is_multisite() ) {
 			if ( current_user_can( 'manage_network_options' ) )
-				return $this->show_query_monitor = true;
+				return true;
 		} else if ( current_user_can( 'view_query_monitor' ) ) {
-			return $this->show_query_monitor = true;
+			return true;
 		}
 
 		if ( $auth = self::get_collector( 'authentication' ) )
-			return $this->show_query_monitor = $auth->show_query_monitor();
+			return $auth->user_can_view();
 
-		return $this->show_query_monitor = false;
+		return false;
 
 	}
 
-	public function action_footer() {
+	public function should_process() {
 
-		$this->did_footer = true;
+		# Don't process if the minimum required actions haven't fired:
+
+		if ( QM_Util::is_ajax() ) {
+
+			if ( ! did_action( 'init' ) ) {
+				return false;
+			}
+
+		} else if ( is_admin() ) {
+
+			if ( ! did_action( 'admin_init' ) ) {
+				return false;
+			}
+
+		} else {
+
+			if ( ! did_action( 'wp' ) ) {
+				return false;
+			}
+
+		}
+
+		$e = error_get_last();
+
+		# Don't process if a fatal has occurred:
+		if ( ! empty( $e ) and ( 1 === $e['type'] ) ) {
+			return false;
+		}
+
+		foreach ( $this->get_dispatchers() as $dispatcher ) {
+
+			# At least one dispatcher is active, so we need to process:
+			if ( $dispatcher->active() ) {
+				return true;
+			}
+
+		}
+
+		return false;
 
 	}
 
 	public function action_shutdown() {
 
-		# @TODO introduce a method on dispatchers which defaults to not processing
-		# qm and then a persistent outputter can switch it on
+		if ( ! $this->should_process() ) {
+			return;
+		}
+
 		foreach ( $this->get_collectors() as $collector ) {
 			$collector->process();
 		}
@@ -183,9 +215,6 @@ class QueryMonitor extends QM_Plugin {
 	public function action_init() {
 
 		load_plugin_textdomain( 'query-monitor', false, dirname( $this->plugin_base() ) . '/languages' );
-
-		if ( !$this->show_query_monitor() )
-			return;
 
 		foreach ( $this->get_dispatchers() as $dispatcher ) {
 			$dispatcher->init();

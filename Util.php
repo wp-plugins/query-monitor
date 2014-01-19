@@ -1,7 +1,7 @@
 <?php
 /*
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,11 +21,6 @@ class QM_Util {
 	protected static $file_dirs       = array();
 
 	private function __construct() {}
-
-	public static function timer_stop_float() {
-		global $timestart;
-		return microtime( true ) - $timestart;
-	}
 
 	public static function sort( $a, $b ) {
 		if ( $a['ltime'] == $b['ltime'] )
@@ -59,8 +54,10 @@ class QM_Util {
 		$dir = str_replace( '\\', '/', $dir );
 		$dir = preg_replace( '|/+|', '/', $dir );
 
-		if ( is_string( $abspath_replace ) )
+		if ( is_string( $abspath_replace ) ) {
+			# @TODO cache the value of self::standard_dir( ABSPATH )
 			$dir = str_replace( self::standard_dir( ABSPATH ), $abspath_replace, $dir );
+		}
 
 		return $dir;
 
@@ -176,6 +173,14 @@ class QM_Util {
 		return false;
 	}
 
+	public static function is_async() {
+		if ( self::is_ajax() )
+			return true;
+		if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) and 'xmlhttprequest' == strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) )
+			return true;
+		return false;
+	}
+
 	public static function wpv() {
 		return 'qm-wp-' . ( floatval( $GLOBALS['wp_version'] ) * 10 );
 	}
@@ -187,41 +192,8 @@ class QM_Util {
 			return get_role( 'administrator' );
 	}
 
-	public static function format_sql( $sql ) {
-
-		$sql = str_replace( array( "\r\n", "\r", "\n", "\t" ), ' ', $sql );
-		$sql = esc_html( $sql );
-		$sql = trim( $sql );
-
-		foreach( array(
-			'ALTER', 'AND', 'COMMIT', 'CREATE', 'DESCRIBE', 'DELETE', 'DROP', 'ELSE', 'END', 'FROM', 'GROUP',
-			'HAVING', 'INNER', 'INSERT', 'LIMIT', 'ON', 'OR', 'ORDER', 'REPLACE', 'ROLLBACK', 'SELECT', 'SET',
-			'SHOW', 'START', 'THEN', 'TRUNCATE', 'UPDATE', 'VALUES', 'WHEN', 'WHERE'
-		) as $cmd )
-			$sql = trim( str_replace( " $cmd ", "<br>$cmd ", $sql ) );
-
-		return $sql;
-
-	}
-
-	public static function format_bool_constant( $constant ) {
-		if ( !defined( $constant ) or !constant( $constant ) )
-			return 'false';
-		else
-			return 'true';
-	}
-
-	public static function format_url( $url ) {
-		$url = str_replace( array(
-			'=',
-			'&',
-			'?',
-		), array(
-			'<span class="qm-equals">=</span>',
-			'<br><span class="qm-param">&amp;</span>',
-			'<br><span class="qm-param">?</span>',
-		), $url );
-		return $url;
+	public static function get_current_url() {
+		return ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	}
 
 }

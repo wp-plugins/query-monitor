@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,14 +36,15 @@ class QM_Collector_Theme extends QM_Collector {
 
 		global $template;
 
-		$template_file        = QM_Util::standard_dir( $template );
+		$template_path        = QM_Util::standard_dir( $template );
 		$stylesheet_directory = QM_Util::standard_dir( get_stylesheet_directory() );
 		$template_directory   = QM_Util::standard_dir( get_template_directory() );
 
-		$template_file = str_replace( array( $stylesheet_directory, $template_directory ), '', $template_file );
+		$template_file = str_replace( array( $stylesheet_directory, $template_directory ), '', $template_path );
 		$template_file = ltrim( $template_file, '/' );
 
-		$this->data['template_file'] = apply_filters( 'query_monitor_template', $template_file, $template );
+		$this->data['template_path'] = $template_path;
+		$this->data['template_file'] = $template_file;
 		$this->data['stylesheet']    = get_stylesheet();
 		$this->data['template']      = get_template();
 

@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -54,8 +54,11 @@ class QM_Backtrace {
 	protected static $filtered = false;
 	protected $trace           = null;
 	protected $filtered_trace  = null;
+	protected $calling_line    = 0;
+	protected $calling_file    = '';
 
 	public function __construct( array $args = array() ) {
+		# @TODO save the args as a property and process the trace JIT
 		$args = array_merge( array(
 			'ignore_current_filter' => true,
 			'ignore_items'          => 0,
@@ -73,17 +76,7 @@ class QM_Backtrace {
 	public function get_stack() {
 
 		$trace = $this->get_filtered_trace();
-		$stack = array();
-
-		if ( empty( $trace ) ) {
-			if ( isset( $this->trace[0]['file'] ) ) {
-				$stack[] = QM_Util::standard_dir( $this->trace[0]['file'], '' );
-			} else {
-				$stack[] = __( 'Unknown', 'query-monitor' );
-			}
-		} else {
-			$stack = wp_list_pluck( $trace, 'display' );
-		}
+		$stack = wp_list_pluck( $trace, 'display' );
 
 		return $stack;
 
@@ -93,11 +86,7 @@ class QM_Backtrace {
 
 		$trace = $this->get_filtered_trace();
 
-		if ( empty( $trace ) ) {
-			return reset( $this->trace );
-		} else {
-			return reset( $trace );
-		}
+		return reset( $trace );
 
 	}
 
@@ -112,9 +101,15 @@ class QM_Backtrace {
 				if ( isset( $item['file'] ) ) {
 					$file = $item['file'];
 				} else if ( isset( $item['class'] ) ) {
+					if ( !is_object( $item['class'] ) and !class_exists( $item['class'], false ) )
+						continue;
+					if ( !method_exists( $item['class'], $item['function'] ) )
+						continue;
 					$ref = new ReflectionMethod( $item['class'], $item['function'] );
 					$file = $ref->getFileName();
 				} else {
+					if ( !function_exists( $item['function'] ) )
+						continue;
 					$ref = new ReflectionFunction( $item['function'] );
 					$file = $ref->getFileName();
 				}
@@ -143,9 +138,24 @@ class QM_Backtrace {
 	public function get_filtered_trace() {
 
 		if ( !isset( $this->filtered_trace ) ) {
-			$trace = array_map( 'QM_Backtrace::filter_trace', $this->trace );
+
+			$trace = array_map( array( $this, 'filter_trace' ), $this->trace );
 			$trace = array_values( array_filter( $trace ) );
+
+			if ( empty( $trace ) ) {
+				$lowest                 = $this->trace[0];
+				$file                   = QM_Util::standard_dir( $lowest['file'], '' );
+				$lowest['calling_file'] = $lowest['file'];
+				$lowest['calling_line'] = $lowest['line'];
+				$lowest['function']     = $file;
+				$lowest['display']      = $file;
+				$lowest['id']           = $file;
+				unset( $lowest['class'], $lowest['args'], $lowest['type'] );
+				$trace[0] = $lowest;
+			}
+
 			$this->filtered_trace = $trace;
+
 		}
 
 		return $this->filtered_trace;
@@ -168,7 +178,7 @@ class QM_Backtrace {
 
 	}
 
-	public static function filter_trace( array $trace ) {
+	public function filter_trace( array $trace ) {
 
 		if ( !self::$filtered and function_exists( 'did_action' ) and did_action( 'plugins_loaded' ) ) {
 
@@ -181,54 +191,69 @@ class QM_Backtrace {
 
 		}
 
+		$return = $trace;
+
 		if ( isset( $trace['class'] ) ) {
 
 			if ( isset( self::$ignore_class[$trace['class']] ) ) {
-				return null;
+				$return = null;
 			} else if ( isset( self::$ignore_method[$trace['class']][$trace['function']] ) ) {
-				return null;
+				$return = null;
 			} else if ( 0 === strpos( $trace['class'], 'QM_' ) ) {
-				return null;
+				$return = null;
 			} else {
-				$trace['id']      = $trace['class'] . $trace['type'] . $trace['function'] . '()';
-				$trace['display'] = $trace['class'] . $trace['type'] . $trace['function'] . '()';
-				return $trace;
+				$return['id']      = $trace['class'] . $trace['type'] . $trace['function'] . '()';
+				$return['display'] = $trace['class'] . $trace['type'] . $trace['function'] . '()';
 			}
 
 		} else {
 
 			if ( isset( self::$ignore_func[$trace['function']] ) ) {
 
-				return null;
+				$return = null;
 
 			} else if ( isset( self::$show_args[$trace['function']] ) ) {
 
 				$show = self::$show_args[$trace['function']];
+
 				if ( 'dir' === $show ) {
 					if ( isset( $trace['args'][0] ) ) {
 						$arg = QM_Util::standard_dir( $trace['args'][0], '&hellip;/' );
-						$trace['id']      = $trace['function'] . '()';
-						$trace['display'] = $trace['function'] . "('{$arg}')";
-						return $trace;
+						$return['id']      = $trace['function'] . '()';
+						$return['display'] = $trace['function'] . "('{$arg}')";
 					}
 				} else {
 					$args = array();
 					for ( $i = 0; $i < $show; $i++ ) {
 						if ( isset( $trace['args'][$i] ) )
-							$args[] = sprintf( "'%s'", $trace['args'][$i] );
+							$args[] = '\'' . $trace['args'][$i] . '\'';
 					}
-					$trace['id']      = $trace['function'] . '()';
-					$trace['display'] = $trace['function'] . '(' . implode( ',', $args ) . ')';
-					return $trace;
+					$return['id']      = $trace['function'] . '()';
+					$return['display'] = $trace['function'] . '(' . implode( ',', $args ) . ')';
 				}
+
+			} else {
+
+				$return['id']      = $trace['function'] . '()';
+				$return['display'] = $trace['function'] . '()';
 
 			}
 
-			$trace['id']      = $trace['function'] . '()';
-			$trace['display'] = $trace['function'] . '()';
-			return $trace;
+		}
+
+		if ( $return ) {
+
+			$return['calling_file'] = $this->calling_file;
+			$return['calling_line'] = $this->calling_line;
 
 		}
+
+		if ( isset( $trace['line'] ) )
+			$this->calling_line = $trace['line'];
+		if ( isset( $trace['file'] ) )
+			$this->calling_file = $trace['file'];
+
+		return $return;
 
 	}
 

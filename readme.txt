@@ -2,15 +2,15 @@
 Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
-Tested up to: 3.8
-Stable tag: 2.6.2
+Tested up to: 3.9
+Stable tag: 2.6.3
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
 
 == Description ==
 
-Query Monitor is a debugging plugin for anyone developing with WordPress. It has some unique features not yet seen in other debugging plugins, including automatic AJAX debugging and the ability to narrow down things by plugin or theme.
+Query Monitor is a debugging plugin for anyone developing with WordPress. It has some advanced features not available in other debugging plugins, including automatic AJAX debugging and the ability to narrow down things by plugin or theme.
 
 For complete information, please see [Query Monitor's GitHub repo](https://github.com/johnbillion/QueryMonitor).
 
@@ -27,7 +27,7 @@ Here's an overview of what's shown:
  * View **aggregate query information** grouped by component, calling function, and type
  * Super advanced: Supports **multiple instances of wpdb** on one page
 
-Filtering queries by component or calling function makes it easy to see which plugins, themes, or functions on your site are making the most (or the slowest) database queries. Query Monitor can easily tell you if your "premium" theme is doing a premium number of database queries.
+Filtering queries by component or calling function makes it easy to see which plugins, themes, or functions on your site are making the most (or the slowest) database queries.
 
 = Hooks =
 
@@ -39,13 +39,12 @@ Filtering queries by component or calling function makes it easy to see which pl
 
  * Shows the **template filename** for the current page
  * Shows the available **body classes** for the current page
- * Shows the active theme name
+ * Shows the active parent and child theme name
 
 = PHP Errors =
 
- * PHP errors (warnings, notices and stricts) are presented nicely along with their component and call stack
+ * PHP errors (warnings, notices, stricts, and deprecated) are presented nicely along with their component and call stack
  * Shows an easily visible warning in the admin toolbar
- * Plays nicely with Xdebug
 
 = Request =
 
@@ -66,13 +65,13 @@ Filtering queries by component or calling function makes it easy to see which pl
 
 The response from any jQuery AJAX request on the page will contain various debugging information in its header that gets output to the developer console. **No hooking required**.
 
-AJAX debugging is in its early stages. Currently it only includes PHP errors (warnings, notices and stricts), but this will be built upon in future versions.
+AJAX debugging is in its early stages. Currently it only includes PHP errors, but this will be built upon in future versions.
 
 = Admin Screen =
 
-Hands up who can remember the correct names for the filters and hooks for custom admin screen columns?
+Hands up who can remember the correct names for the filters and actions for custom admin screen columns?
 
- * Shows the correct names for **custom column hooks and filters** on all admin screens that have a listing table
+ * Shows the correct names for **custom column filters and actions** on all admin screens that have a listing table
  * Shows the state of `get_current_screen()` and a few variables
 
 = Environment Information =
@@ -82,14 +81,19 @@ Hands up who can remember the correct names for the filters and hooks for custom
  * Shows **various MySQL information**, including caching and performance related configuration
  * Highlights the fact when any performance related configurations are not optimal
  * Shows various details about **WordPress** and the **web server**
- * Shows version numbers for everything
+ * Shows version numbers for all the things
 
 = Everything Else =
 
  * Shows any **transients that were set**, along with their timeout, component, and call stack
  * Shows all **WordPress conditionals** on the current page, highlighted nicely
- * Shows an overview at the top, including page generation time and memory limit as absolute values and as % of their respective limits
- * You can set an authentication cookie which allows you to view Query Monitor output when you're not logged in (or if you're logged in as a non-administrator). See the bottom of Query Monitor's output for details
+ * Shows an overview including page generation time and memory limit as absolute values and as % of their respective limits
+
+= Authentication =
+
+By default, Query Monitor's output is only shown to Administrators on single-site installs, and Super Admins on Multisite installs.
+
+In addition to this, you can set an authentication cookie which allows you to view Query Monitor output when you're not logged in (or if you're logged in as a non-administrator). See the bottom of Query Monitor's output for details.
 
 == Installation ==
 
@@ -114,11 +118,41 @@ Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordp
 
 == Frequently Asked Questions ==
 
-= There's nothing here =
+= Who can see Query Monitor's output? =
 
-I know!
+By default, Query Monitor's output is only shown to Administrators on single-site installs, and Super Admins on Multisite installs.
+
+In addition to this, you can set an authentication cookie which allows you to view Query Monitor output when you're not logged in (or if you're logged in as a non-administrator). See the bottom of Query Monitor's output for details.
+
+= Does Query Monitor itself impact the page generation time or memory usage? =
+
+Short answer: Yes, but only a little.
+
+Long answer: Query Monitor has a small impact on page generation time because it hooks into a few places in WordPress in the same way that other plugins do. The impact is negligable.
+
+On pages that have an especially high number of database queries (in the hundreds), Query Monitor currently uses more memory than I would like it to. This is due to the amount of data that is captured in the stack trace for each query. I have been and will be working to continually reduce this.
+
+= Where can I suggest a new feature or report a bug? =
+
+Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com/johnbillion/QueryMonitor/issues) as it's easier to keep track of issues there, rather than on the wordpress.org support forums.
+
+= Do you accept donations? =
+
+No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](http://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.6.3 =
+* Clickable stack traces and file names if you've configured Xdebug's `file_link_format` setting
+* Show the number of times each PHP error has been triggered
+* Visual bugfixes when using Firefox
+* Fix a bug which was preventing AJAX debugging from being output
+* Fix a fatal error when using PHP 5.2 on Windows
+* Display HTTP proxy information when appropriate
+* Introduce the `QM_DISABLE` constant for unconditionally disabling Query Monitor
+* Always return true from our PHP error handler to suppress unwanted PHP error output (eg. from Xdebug)
+* Internals: Much more robust logic and even more separation of data collection and output
+* Internals: Many performance improvements
 
 = 2.6.2 =
 * Fix two fundamental stability and compatibility issues (great news)

@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -74,10 +74,9 @@ class QM_Collector_PHP_Errors extends QM_Collector {
 
 		if ( error_reporting() > 0 ) {
 
-			$trace = new QM_Backtrace;
-			$stack = $trace->get_stack();
-			$func  = reset( $stack );
-			$key   = md5( $message . $file . $line . $func );
+			$trace  = new QM_Backtrace;
+			$caller = $trace->get_caller();
+			$key    = md5( $message . $file . $line . $caller['id'] );
 
 			$filename = QM_Util::standard_dir( $file, '' );
 
@@ -109,17 +108,4 @@ function register_qm_collector_php_errors( array $qm ) {
 	return $qm;
 }
 
-function qm_php_errors_return_value( $return ) {
-	if ( QM_Util::is_ajax() )
-		return true;
-	if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) and 'xmlhttprequest' == strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) )
-		return true;
-	# If Xdebug is enabled we'll return false so Xdebug's error handler can do its thing.
-	if ( function_exists( 'xdebug_is_enabled' ) and xdebug_is_enabled() )
-		return false;
-	else
-		return $return;
-}
-
 add_filter( 'query_monitor_collectors', 'register_qm_collector_php_errors', 110 );
-add_filter( 'query_monitor_php_errors_return_value', 'qm_php_errors_return_value' );

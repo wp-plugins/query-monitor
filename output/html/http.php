@@ -1,7 +1,7 @@
 <?php
 /*
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -50,15 +50,13 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 			foreach ( $data['http'] as $key => $row ) {
 				$funcs = array();
 
-				$ltime = ( $row['end'] - $row['start'] );
+				$ltime = $row['ltime'];
 				$total_time += $ltime;
 
 				if ( empty( $ltime ) )
 					$stime = '';
 				else
 					$stime = number_format_i18n( $ltime, 4 );
-
-				$ltime = number_format_i18n( $ltime, 10 );
 
 				if ( is_wp_error( $row['response'] ) ) {
 					$response = $row['response']->get_error_message();
@@ -81,7 +79,7 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 				$method = $row['args']['method'];
 				if ( !$row['args']['blocking'] )
 					$method .= '&nbsp;' . _x( '(non-blocking)', 'non-blocking HTTP transport', 'query-monitor' );
-				$url = QM_Util::format_url( $row['url'] );
+				$url = self::format_url( $row['url'] );
 
 				if ( isset( $row['transport'] ) )
 					$transport = $row['transport'];
@@ -110,7 +108,7 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 						<td valign='top' class='qm-ltr'>{$stack}</td>\n
 						<td valign='top'>{$component->name}</td>\n
 						<td valign='top'>{$row['args']['timeout']}</td>\n
-						<td valign='top' title='{$ltime}'>{$stime}</td>\n
+						<td valign='top'>{$stime}</td>\n
 					</tr>\n
 				";
 			}
@@ -121,8 +119,18 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 			$total_stime = number_format_i18n( $total_time, 4 );
 			$total_ltime = number_format_i18n( $total_time, 10 );
 
+			$vars = '&nbsp;';
+
+			if ( isset( $data['vars'] ) ) {
+				$vars = array();
+				foreach ( $data['vars'] as $key => $value ) {
+					$vars[] = $key . ': ' . $value;
+				}
+				$vars = implode( ', ', $vars );
+			}
+
 			echo '<tr>';
-			echo '<td colspan="6">&nbsp;</td>';
+			echo '<td colspan="6">' . $vars . '</td>';
 			echo "<td title='{$total_ltime}'>{$total_stime}</td>";
 			echo '</tr>';
 			echo '</tfoot>';

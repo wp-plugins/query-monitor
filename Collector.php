@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,6 +51,18 @@ abstract class QM_Collector {
 
 		return $out;
 
+	}
+
+	public static function timer_stop_float() {
+		global $timestart;
+		return microtime( true ) - $timestart;
+	}
+
+	public static function format_bool_constant( $constant ) {
+		if ( !defined( $constant ) or !constant( $constant ) )
+			return 'false';
+		else
+			return 'true';
 	}
 
 	final public function get_data() {

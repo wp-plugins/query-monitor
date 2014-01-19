@@ -9,7 +9,7 @@ additional database query information in Query Monitor's output.
 
 *********************************************************************
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,11 +25,15 @@ GNU General Public License for more details.
 
 defined( 'ABSPATH' ) or die();
 
+if ( defined( 'QM_DISABLED' ) and QM_DISABLED )
+	return;
+
 # No autoloaders for us. See https://github.com/johnbillion/QueryMonitor/issues/7
-foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util' ) as $f ) {
-	if ( ! is_readable( $file = dirname( __FILE__ ) . "/../{$f}.php" ) )
+$qm_dir = dirname( dirname( __FILE__ ) );
+foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util' ) as $qm_class ) {
+	if ( ! is_readable( $qm_file = "{$qm_dir}/{$qm_class}.php" ) )
 		return;
-	require_once $file;
+	require_once $qm_file;
 }
 
 if ( !defined( 'SAVEQUERIES' ) )
@@ -87,17 +91,18 @@ class QueryMonitorDB extends wpdb {
 		// Keep track of the last query for debug..
 		$this->last_query = $query;
 
-		if ( defined( 'SAVEQUERIES' ) && SAVEQUERIES )
+		if ( SAVEQUERIES )
 			$this->timer_start();
 
 		$this->result = @mysql_query( $query, $this->dbh );
 		$this->num_queries++;
 
-		if ( defined( 'SAVEQUERIES' ) && SAVEQUERIES ) {
+		if ( SAVEQUERIES ) {
+			$ltime = $this->timer_stop();
 			$trace = new QM_Backtrace;
 			$q = array(
 				'sql'    => $query,
-				'ltime'  => $this->timer_stop(),
+				'ltime'  => $ltime,
 				'stack'  => implode( ', ', array_reverse( $trace->get_stack() ) ),
 				'trace'  => $trace,
 				'result' => null,
@@ -111,7 +116,7 @@ class QueryMonitorDB extends wpdb {
 
 		// If there is an error then take note of it..
 		if ( $this->last_error = mysql_error( $this->dbh ) ) {
-			if ( defined( 'SAVEQUERIES' ) && SAVEQUERIES )
+			if ( SAVEQUERIES )
 				$this->queries[$this->num_queries]['result'] = new WP_Error( 'qmdb', $this->last_error );
 			// Clear insert_id on a subsequent failed insert.
 			if ( $this->insert_id && preg_match( '/^\s*(insert|replace)\s/i', $query ) )
@@ -144,7 +149,7 @@ class QueryMonitorDB extends wpdb {
 			$return_val     = $num_rows;
 		}
 
-		if ( defined( 'SAVEQUERIES' ) && SAVEQUERIES )
+		if ( SAVEQUERIES )
 			$this->queries[$this->num_queries]['result'] = $return_val;
 
 		return $return_val;

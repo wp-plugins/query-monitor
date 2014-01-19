@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ class QM_Collector_Overview extends QM_Collector {
 
 	public function process() {
 
-		$this->data['time']       = QM_Util::timer_stop_float();
+		$this->data['time']       = self::timer_stop_float();
 		$this->data['time_limit'] = ini_get( 'max_execution_time' );
 
 		if ( !empty( $this->data['time_limit'] ) )
@@ -36,11 +36,7 @@ class QM_Collector_Overview extends QM_Collector {
 		else
 			$this->data['time_usage'] = 0;
 
-		if ( function_exists( 'memory_get_peak_usage' ) )
-			$this->data['memory'] = memory_get_peak_usage();
-		else
-			$this->data['memory'] = memory_get_usage();
-
+		$this->data['memory']       = memory_get_peak_usage();
 		$this->data['memory_limit'] = QM_Util::convert_hr_to_bytes( ini_get( 'memory_limit' ) );
 		$this->data['memory_usage'] = ( 100 / $this->data['memory_limit'] ) * $this->data['memory'];
 

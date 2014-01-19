@@ -15,19 +15,25 @@ GNU General Public License for more details.
 
 */
 
-class QM_Output_Headers implements QM_Output {
-
-	public function __construct( QM_Collector $collector ) {
-		$this->collector = $collector;
-	}
+class QM_Output_Headers_Redirects extends QM_Output_Headers {
 
 	public function output() {
-		# Headers output does nothing by default
-		return false;
-	}
 
-	final public function get_type() {
-		return 'headers';
+		$data = $this->collector->get_data();
+
+		if ( empty( $data ) )
+			return;
+
+		header( sprintf( 'X-QM-Redirect-Trace: %s',
+			implode( ', ', $data['trace']->get_stack() )
+		) );
+
 	}
 
 }
+
+function register_qm_output_headers_redirects( QM_Output $output = null, QM_Collector $collector ) {
+	return new QM_Output_Headers_Redirects( $collector );
+}
+
+add_filter( 'query_monitor_output_headers_redirects', 'register_qm_output_headers_redirects', 10, 2 );

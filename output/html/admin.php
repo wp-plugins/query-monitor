@@ -1,7 +1,7 @@
 <?php
 /*
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ class QM_Output_Html_Admin extends QM_Output_Html {
 		echo '<table cellspacing="0">';
 		echo '<thead>';
 		echo '<tr>';
-		echo '<th colspan="3">' . $this->collector->name() . '</th>';
+		echo '<th colspan="2">' . $this->collector->name() . '</th>';
 		echo '</tr>';
 		echo '</thead>';
 		echo '<tbody>';
@@ -42,24 +42,16 @@ class QM_Output_Html_Admin extends QM_Output_Html {
 		echo '<td class="qm-ltr">get_current_screen()</td>';
 		echo '<td>';
 
-		if ( is_object( $data['admin'] ) ) {
-			echo '<table class="qm-inner" cellspacing="0">';
-			echo '<tbody>';
-			foreach ( $data['admin'] as $key => $value ) {
-				echo '<tr>';
-				echo "<td class='qm-var'>{$key}:</td>";
-				echo '<td>';
-				echo $value;
-				if ( !empty( $value ) and ( $data['current_screen']->$key != $value ) )
-					echo '&nbsp;(<a href="http://core.trac.wordpress.org/ticket/14886" class="qm-warn" title="' . esc_attr__( 'This value may not be as expected. Please see WordPress bug #14886.', 'query-monitor' ) . '" target="_blank">!</a>)';
-				echo '</td>';
-				echo '</tr>';
-			}
-			echo '</tbody>';
-			echo '</table>';
-		} else {
-			echo $data['admin'];
+		echo '<table class="qm-inner" cellspacing="0">';
+		echo '<tbody>';
+		foreach ( $data['current_screen'] as $key => $value ) {
+			echo '<tr>';
+			echo '<td class="qm-var">' . esc_html( $key ) . ':</td>';
+			echo '<td>' . esc_html( $value ) . '</td>';
+			echo '</tr>';
 		}
+		echo '</tbody>';
+		echo '</table>';
 
 		echo '</td>';
 		echo '</tr>';

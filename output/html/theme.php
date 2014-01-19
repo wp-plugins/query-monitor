@@ -1,7 +1,7 @@
 <?php
 /*
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ class QM_Output_Html_Theme extends QM_Output_Html {
 		echo '<tbody>';
 		echo '<tr>';
 		echo '<td>' . __( 'Template', 'query-monitor' ) . '</td>';
-		echo "<td>{$data['template_file']}</td>";
+		echo '<td>' . self::output_filename( $data['template_file'], $data['template_path'] ) . '</td>';
 		echo '</tr>';
 
 		if ( !empty( $data['body_class'] ) ) {

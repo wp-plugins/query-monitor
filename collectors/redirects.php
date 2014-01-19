@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,16 +31,12 @@ class QM_Collector_Redirects extends QM_Collector {
 
 		if ( !$location )
 			return $location;
-		if ( !QueryMonitor::init()->show_query_monitor() )
-			return $location;
-		if ( headers_sent() )
-			return $location;
 
 		$trace = new QM_Backtrace;
 
-		header( sprintf( 'X-QM-Redirect-Trace: %s',
-			implode( ', ', $trace->get_stack() )
-		) );
+		$this->data['trace']    = $trace;
+		$this->data['location'] = $location;
+		$this->data['status']   = $status;
 
 		return $location;
 

@@ -1,7 +1,7 @@
 <?php
 /*
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 		echo '<thead>';
 		echo '<tr>';
 		echo '<th colspan="2">' . __( 'PHP Error', 'query-monitor' ) . '</th>';
-		echo '<th>' . __( 'File', 'query-monitor' ) . '</th>';
-		echo '<th>' . __( 'Line', 'query-monitor' ) . '</th>';
+		echo '<th>' . __( 'Count', 'query-monitor' ) . '</th>';
+		echo '<th>' . __( 'Location', 'query-monitor' ) . '</th>';
 		echo '<th>' . __( 'Call Stack', 'query-monitor' ) . '</th>';
 		echo '<th>' . __( 'Component', 'query-monitor' ) . '</th>';
 		echo '</tr>';
@@ -55,10 +55,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 			if ( isset( $data['errors'][$type] ) ) {
 
 				echo '<tr>';
-				if ( count( $data['errors'][$type] ) > 1 )
-					echo '<td rowspan="' . count( $data['errors'][$type] ) . '">' . $title . '</td>';
-				else
-					echo '<td>' . $title . '</td>';
+				echo '<td rowspan="' . count( $data['errors'][$type] ) . '">' . $title . '</td>';
 				$first = true;
 
 				foreach ( $data['errors'][$type] as $error ) {
@@ -66,19 +63,18 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 					if ( !$first )
 						echo '<tr>';
 
-					$stack = $error->trace->get_stack();
+					$stack     = $error->trace->get_stack();
 					$component = $error->trace->get_component();
+					$stack     = implode( '<br>', $stack );
+					$message   = str_replace( "href='function.", "target='_blank' href='http://php.net/function.", $error->message );
 
-					if ( empty( $stack ) )
-						$stack = '<em>' . __( 'none', 'query-monitor' ) . '</em>';
-					else
-						$stack = implode( '<br>', $stack );
-
-					$message = str_replace( "href='function.", "target='_blank' href='http://php.net/function.", $error->message );
+					$output = esc_html( $error->filename ) . ':' . $error->line;
 
 					echo '<td>' . $message . '</td>';
-					echo '<td title="' . esc_attr( $error->file ) . '">' . esc_html( $error->filename ) . '</td>';
-					echo '<td>' . esc_html( $error->line ) . '</td>';
+					echo '<td>' . number_format_i18n( $error->calls ) . '</td>';
+					echo '<td title="' . esc_attr( $error->file ) . '">';
+					echo self::output_filename( $output, $error->file, $error->line );
+					echo '</td>';
 					echo '<td class="qm-ltr">' . $stack . '</td>';
 					echo '<td>' . $component->name . '</td>';
 					echo '</tr>';

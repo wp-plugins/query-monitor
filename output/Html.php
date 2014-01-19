@@ -1,7 +1,7 @@
 <?php
 /*
 
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@ GNU General Public License for more details.
 */
 
 class QM_Output_Html implements QM_Output {
+
+	protected static $file_link_format = null;
 
 	public function __construct( QM_Collector $collector ) {
 		$this->collector = $collector;
@@ -79,6 +81,61 @@ class QM_Output_Html implements QM_Output {
 			'id'   => "query-monitor-{$this->collector->id}",
 			'href' => '#' . $this->collector->id()
 		), $args );
+
+	}
+
+	public static function format_sql( $sql ) {
+
+		$sql = str_replace( array( "\r\n", "\r", "\n", "\t" ), ' ', $sql );
+		$sql = esc_html( $sql );
+		$sql = trim( $sql );
+
+		foreach( array(
+			'ALTER', 'AND', 'COMMIT', 'CREATE', 'DESCRIBE', 'DELETE', 'DROP', 'ELSE', 'END', 'FROM', 'GROUP',
+			'HAVING', 'INNER', 'INSERT', 'LIMIT', 'ON', 'OR', 'ORDER', 'REPLACE', 'ROLLBACK', 'SELECT', 'SET',
+			'SHOW', 'START', 'THEN', 'TRUNCATE', 'UPDATE', 'VALUES', 'WHEN', 'WHERE'
+		) as $cmd )
+			$sql = trim( str_replace( " $cmd ", "<br>$cmd ", $sql ) );
+
+		return $sql;
+
+	}
+
+	public static function format_url( $url ) {
+		$url = str_replace( array(
+			'=',
+			'&',
+			'?',
+		), array(
+			'<span class="qm-equals">=</span>',
+			'<br><span class="qm-param">&amp;</span>',
+			'<br><span class="qm-param">?</span>',
+		), $url );
+		return $url;
+
+	}
+
+	public static function output_filename( $text, $file, $line = 1 ) {
+
+		# Further reading:
+		# http://simonwheatley.co.uk/2012/07/clickable-stack-traces/
+		# https://github.com/dhoulb/subl
+
+		if ( !isset( self::$file_link_format ) ) {
+			$format = ini_get( 'xdebug.file_link_format' );
+			$format = apply_filters( 'query_monitor_file_link_format', $format );
+			if ( empty( $format ) )
+				self::$file_link_format = false;
+			else
+				self::$file_link_format = str_replace( array( '%f', '%l' ), array( '%1$s', '%2$d' ), $format );
+		}
+
+		if ( false === self::$file_link_format ) {
+			return $text;
+		}
+
+		$link = sprintf( self::$file_link_format, urlencode( $file ), $line );
+		return sprintf( '<a href="%s">%s</a>', $link, $text );
 
 	}
 

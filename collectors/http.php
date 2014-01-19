@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2013 John Blackbourn
+Copyright 2014 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -138,6 +138,13 @@ class QM_Collector_HTTP extends QM_Collector {
 					$this->data['errors']['warning'][] = $key;
 			}
 
+			$http['ltime'] = ( $http['end'] - $http['start'] );
+
+		}
+
+		foreach ( array( 'WP_PROXY_HOST', 'WP_PROXY_PORT' ) as $var ) {
+			if ( defined( $var ) and constant( $var ) )
+				$this->data['vars'][$var] = constant( $var );
 		}
 
 	}
