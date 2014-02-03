@@ -17,6 +17,8 @@ GNU General Public License for more details.
 
 class QM_Output_Html_DB_Queries extends QM_Output_Html {
 
+	public $query_row = 0;
+
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
 		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 20 );
@@ -114,7 +116,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 		if ( isset( $expensive[0]['result'] ) )
 			echo '<th scope="col">' . __( 'Affected Rows', 'query-monitor' ) . '</th>';
 
-		echo '<th>' . __( 'Time', 'query-monitor' ) . '</th>';
+		echo '<th class="qm-num">' . __( 'Time', 'query-monitor' ) . '</th>';
 		echo '</tr>';
 		echo '</thead>';
 		echo '<tbody>';
@@ -132,7 +134,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 
 		$max_exceeded = $db->total_qs > QM_DB_LIMIT;
 
-		$span = 3;
+		$span = 4;
 
 		if ( $db->has_results )
 			$span++;
@@ -140,7 +142,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 			$span++;
 
 		echo '<div class="qm qm-queries" id="' . $this->collector->id() . '-' . sanitize_title( $name ) . '">';
-		echo '<table cellspacing="0">';
+		echo '<table cellspacing="0" class="qm-sortable">';
 		echo '<thead>';
 		echo '<tr>';
 		echo '<th colspan="' . $span . '">' . sprintf( __( '%s Queries', 'query-monitor' ), $name ) . '</th>';
@@ -165,6 +167,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 		}
 
 		echo '<tr>';
+		echo '<th scope="col" class="qm-sorted-asc">&nbsp;' . $this->build_sorter() . '</th>';
 		echo '<th scope="col">' . __( 'Query', 'query-monitor' ) . $this->build_filter( 'type', array_keys( $db->types ) ) . '</th>';
 		echo '<th scope="col">' . __( 'Caller', 'query-monitor' ) . $this->build_filter( 'caller', array_keys( $data['times'] ) ) . '</th>';
 
@@ -172,9 +175,9 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 			echo '<th scope="col">' . __( 'Component', 'query-monitor' ) . $this->build_filter( 'component', array_keys( $data['component_times'] ) ) . '</th>';
 
 		if ( $db->has_results )
-			echo '<th scope="col">' . __( 'Affected Rows', 'query-monitor' ) . '</th>';
+			echo '<th scope="col">' . __( 'Rows', 'query-monitor' ) . $this->build_sorter() . '</th>';
 
-		echo '<th scope="col">' . __( 'Time', 'query-monitor' ) . '</th>';
+		echo '<th scope="col" class="qm-num">' . __( 'Time', 'query-monitor' ) . $this->build_sorter() . '</th>';
 		echo '</tr>';
 		echo '</thead>';
 
@@ -182,14 +185,13 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 
 			echo '<tbody>';
 
-			foreach ( $db->rows as $i => $row )
+			foreach ( $db->rows as $row )
 				$this->output_query_row( $row, array( 'sql', 'caller', 'component', 'result', 'time' ) );
 
 			echo '</tbody>';
 			echo '<tfoot>';
 
 			$total_stime = number_format_i18n( $db->total_time, 4 );
-			$total_ltime = number_format_i18n( $db->total_time, 10 );
 
 			echo '<tr class="qm-items-shown qm-hide">';
 			echo '<td valign="top" colspan="' . ( $span - 1 ) . '">' . sprintf( __( 'Queries in filter: %s', 'query-monitor' ), '<span class="qm-items-number">' . number_format_i18n( $db->total_qs ) . '</span>' ) . '</td>';
@@ -198,7 +200,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 
 			echo '<tr>';
 			echo '<td valign="top" colspan="' . ( $span - 1 ) . '">' . sprintf( __( 'Total Queries: %s', 'query-monitor' ), number_format_i18n( $db->total_qs ) ) . '</td>';
-			echo "<td valign='top' title='{$total_ltime}'>{$total_stime}</td>";
+			echo "<td valign='top'>{$total_stime}</td>";
 			echo '</tr>';
 			echo '</tfoot>';
 
@@ -230,7 +232,6 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 
 		$row_attr = array();
 		$stime = number_format_i18n( $row['ltime'], 4 );
-		$ltime = number_format_i18n( $row['ltime'], 10 );
 		$td = $this->collector->is_expensive( $row ) ? ' qm-expensive' : '';
 
 		$sql = self::format_sql( $row['sql'] );
@@ -264,6 +265,8 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 
 		echo "<tr{$attr}>";
 
+		echo "<td valign='top' class='qm-'>" . ++$this->query_row . "</td>";
+
 		if ( isset( $cols['sql'] ) )
 			echo "<td valign='top' class='qm-row-sql qm-ltr qm-sql'>{$sql}</td>";
 
@@ -287,7 +290,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 			$stack = implode( '<br>', $stack );
 
 			if ( !empty( $stack ) ) {
-				echo '<a href="#" class="qm-toggle">+</a>';
+				echo '<a href="#" class="qm-toggle" data-on="+" data-off="-">+</a>';
 				echo '<div class="qm-toggled">' . $stack . '</div>';
 			}
 
@@ -309,7 +312,7 @@ class QM_Output_Html_DB_Queries extends QM_Output_Html {
 			echo $result;
 
 		if ( isset( $cols['time'] ) )
-			echo "<td valign='top' title='{$ltime}' class='qm-row-time{$td}'>{$stime}</td>\n";
+			echo "<td valign='top' class='qm-row-time{$td}'>{$stime}</td>\n";
 
 		echo '</tr>';
 

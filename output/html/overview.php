@@ -26,45 +26,27 @@ class QM_Output_Html_Overview extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		$http_time      = null;
 		$db_query_num   = null;
 		$db_query_types = array();
 		# @TODO: make this less derpy:
-		$http           = QueryMonitor::get_collector( 'http' );
 		$db_queries     = QueryMonitor::get_collector( 'db_queries' );
-		$time_usage     = '';
-		$memory_usage   = '';
-
-		if ( $http ) {
-			$http_data = $http->get_data();
-			if ( isset( $http_data['http'] ) ) {
-				foreach ( $http_data['http'] as $row ) {
-					if ( isset( $row['response'] ) )
-						$http_time += ( $row['end'] - $row['start'] );
-					else
-						$http_time += $row['args']['timeout'];
-				}
-			}
-		}
 
 		if ( $db_queries ) {
 			$db_queries_data = $db_queries->get_data();
 			if ( isset( $db_queries_data['types'] ) ) {
 				$db_query_num = $db_queries_data['types'];
 				$db_stime = number_format_i18n( $db_queries_data['total_time'], 4 );
-				$db_ltime = number_format_i18n( $db_queries_data['total_time'], 10 );
 			}
 		}
 
 		$total_stime = number_format_i18n( $data['time'], 4 );
-		$total_ltime = number_format_i18n( $data['time'], 10 );
 
 		echo '<div class="qm" id="' . $this->collector->id() . '">';
 		echo '<table cellspacing="0">';
 
-		$memory_usage .= '<br><span class="qm-info">' . sprintf( __( '%1$s%% of %2$s kB limit', 'query-monitor' ), number_format_i18n( $data['memory_usage'], 1 ), number_format_i18n( $data['memory_limit'] / 1024 ) ) . '</span>';
+		$memory_usage = '<br><span class="qm-info">' . sprintf( __( '%1$s%% of %2$s kB limit', 'query-monitor' ), number_format_i18n( $data['memory_usage'], 1 ), number_format_i18n( $data['memory_limit'] / 1024 ) ) . '</span>';
 
-		$time_usage .= '<br><span class="qm-info">' . sprintf( __( '%1$s%% of %2$ss limit', 'query-monitor' ), number_format_i18n( $data['time_usage'], 1 ), number_format_i18n( $data['time_limit'] ) ) . '</span>';
+		$time_usage = '<br><span class="qm-info">' . sprintf( __( '%1$s%% of %2$ss limit', 'query-monitor' ), number_format_i18n( $data['time_usage'], 1 ), number_format_i18n( $data['time_limit'] ) ) . '</span>';
 
 		echo '<thead>';
 		echo '<tr>';
@@ -79,10 +61,10 @@ class QM_Output_Html_Overview extends QM_Output_Html {
 
 		echo '<tbody>';
 		echo '<tr>';
-		echo "<td><span title='{$total_ltime}'>{$total_stime}</span>{$time_usage}</td>";
-		echo '<td><span title="' . esc_attr( sprintf( __( '%s bytes', 'query-monitor' ), number_format_i18n( $data['memory'] ) ) ) . '">' . sprintf( __( '%s kB', 'query-monitor' ), number_format_i18n( $data['memory'] / 1024 ) ) . '</span>' . $memory_usage . '</td>';
+		echo "<td>{$total_stime}{$time_usage}</td>";
+		echo '<td>' . sprintf( __( '%s kB', 'query-monitor' ), number_format_i18n( $data['memory'] / 1024 ) ) . $memory_usage . '</td>';
 		if ( isset( $db_query_num ) ) {
-			echo "<td title='{$db_ltime}'>{$db_stime}</td>";
+			echo "<td>{$db_stime}</td>";
 			echo '<td>';
 
 			foreach ( $db_query_num as $type_name => $type_count )

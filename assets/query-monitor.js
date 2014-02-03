@@ -56,6 +56,8 @@ jQuery( function($) {
 	if ( !window.qm )
 		return;
 
+	var is_admin = $('body').hasClass('wp-admin');
+
 	if ( $('#wp-admin-bar-query-monitor').length ) {
 
 		var container = document.createDocumentFragment();
@@ -88,6 +90,9 @@ jQuery( function($) {
 		$('#wp-admin-bar-query-monitor ul').append(container);
 
 		$('#wp-admin-bar-query-monitor').find('a').on('click',function(e){
+			if ( is_admin ) {
+				$('#wpfooter').css('position','relative');
+			}
 			$('#qm').show();
 		});
 
@@ -126,11 +131,11 @@ jQuery( function($) {
 
 	$('#qm').find('.qm-toggle').on('click',function(e){
 		var el = $(this);
-		$(this).parent().find('.qm-toggled').toggle(0,function(){
-			if ( '+' == el.text() )
-				el.text('-');
+		$(this).closest('td').find('.qm-toggled').toggle(0,function(){
+			if ( el.attr('data-off') == el.text() )
+				el.text(el.attr('data-on'));
 			else
-				el.text('+');
+				el.text(el.attr('data-off'));
 		});
 		e.preventDefault();
 	});
@@ -170,4 +175,157 @@ jQuery( function($) {
 
 	} );
 
+	if ( is_admin ) {
+		$('#qm').detach().appendTo('#wpwrap');
+	}
+
+	$.qm.tableSort({target: $('.qm-sortable'), debug: false});
+
 } );
+
+/**
+ * This is a modified version of:
+ * 
+ * jQuery table-sort v0.1.1
+ * https://github.com/gajus/table-sort
+ *
+ * Licensed under the BSD.
+ * https://github.com/gajus/table-sort/blob/master/LICENSE
+ *
+ * Author: Gajus Kuizinas <g.kuizinas@anuary.com>
+ */
+(function ($) {
+	$.qm = $.qm || {};
+	$.qm.tableSort = function (options) {
+		var settings = $.extend({
+			'debug': false
+		}, options);
+		
+		// @param	object	columns	NodeList table colums.
+		// @param	integer	row_width	defines the number of columns per row.
+		var table_to_array	= function (columns, row_width) {
+			if (settings.debug) {
+				console.time('table to array');
+			}
+		
+			columns = Array.prototype.slice.call(columns, 0);
+			
+			var rows      = [];
+			var row_index = 0;
+			
+			for (var i = 0, j = columns.length; i < j; i += row_width) {
+				var row	= [];
+				
+				for (var k = 0, l = row_width; k < l; k++) {
+					var e = columns[i+k];
+					
+					var data = e.dataset.qmSortWeight;
+					
+					if (data === undefined) {
+						data = e.textContent || e.innerText;
+					}
+					
+					var number = parseFloat(data);
+					
+					data = isNaN(number) ? data : number;
+					
+					row.push(data);
+				}
+				
+				rows.push({index: row_index++, data: row});
+			}
+			
+			if (settings.debug) {
+				console.timeEnd('table to array');
+			}
+			
+			return rows;
+		};
+		
+		if (!settings.target || !settings.target instanceof $) {
+			throw 'Target is not defined or it is not instance of jQuery.';
+		}
+		
+		settings.target.each(function () {
+			var table = $(this);
+			
+			table.find('.qm-sort').on('click', function (e) {
+				var desc = $(this).hasClass('qm-sort-desc');
+				
+				var index = $(this).closest('th').index();
+ 
+				table.find('th').removeClass('qm-sorted-asc qm-sorted-desc');
+
+				if ( desc )
+					$(this).closest('th').addClass('qm-sorted-desc');
+				else
+					$(this).closest('th').addClass('qm-sorted-asc');
+
+				table.find('tbody:not(.qm-sort-no)').each(function () {
+					var tbody = $(this);
+					
+					var rows = this.rows;
+					
+					var anomalies = $(rows).has('[colspan]').detach();
+					
+					var columns = this.getElementsByTagName('td');
+					
+					if (this.data_matrix === undefined) {
+						this.data_matrix = table_to_array(columns, $(rows[0]).find('td').length);
+					}
+					
+					var data = this.data_matrix;
+					
+					if (settings.debug) {
+						console.time('sort data');
+					}
+					
+					data.sort(function (a, b) {
+						if (a.data[index] == b.data[index]) {
+							return 0;
+						}
+						
+						return (desc ? a.data[index] > b.data[index] : a.data[index] < b.data[index]) ? -1 : 1;
+					});
+										
+					if (settings.debug) {
+						console.timeEnd('sort data');
+						console.time('build table');
+					}
+					
+					// Will use this to re-attach the tbody object.
+					var table = tbody.parent();
+					
+					// Detach the tbody to prevent unnecassy overhead related
+					// to the browser environment.
+					tbody = tbody.detach();
+					
+					// Convert NodeList into an array.
+					rows = Array.prototype.slice.call(rows, 0);
+					
+					var last_row = rows[data[data.length-1].index];
+					
+					for (var i = 0, j = data.length-1; i < j; i++) {
+						tbody[0].insertBefore(rows[data[i].index], last_row);
+						
+						// Restore the index.
+						data[i].index = i;
+					}
+					
+					// // Restore the index.
+					data[data.length-1].index = data.length-1;
+					
+					tbody.prepend(anomalies);
+					
+					table.append(tbody);
+					
+					
+					if (settings.debug) {
+						console.timeEnd('build table');
+					}
+				});
+				e.preventDefault();
+			});
+		});
+	};
+})(jQuery);

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.3
+Version:     2.6.4
 Plugin URI:  https://github.com/johnbillion/query-monitor
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -144,13 +144,7 @@ class QueryMonitor extends QM_Plugin {
 
 		# Don't process if the minimum required actions haven't fired:
 
-		if ( QM_Util::is_ajax() ) {
-
-			if ( ! did_action( 'init' ) ) {
-				return false;
-			}
-
-		} else if ( is_admin() ) {
+		if ( is_admin() ) {
 
 			if ( ! did_action( 'admin_init' ) ) {
 				return false;

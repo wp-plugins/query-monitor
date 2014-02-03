@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
 Tested up to: 3.9
-Stable tag: 2.6.3
+Stable tag: 2.6.4
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -50,6 +50,7 @@ Filtering queries by component or calling function makes it easy to see which pl
 
  * Shows **matched rewrite rules** and associated query strings
  * Shows **query vars** for the current request, and highlights **custom query vars**
+ * Shows the **queried object** details (collapsed by default)
 
 = HTTP Requests =
 
@@ -141,6 +142,13 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](http://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.6.4 =
+* Introduce sortable columns for database query times and numbers
+* Display the queried object in the Request panel
+* Fix the admin menu behaviour when viewing QM output
+* Fixes for output buffering and AJAX requests
+* Several bits of code cleanup
 
 = 2.6.3 =
 * Clickable stack traces and file names if you've configured Xdebug's `file_link_format` setting
