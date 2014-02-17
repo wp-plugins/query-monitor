@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries
 Requires at least: 3.5
 Tested up to: 3.9
-Stable tag: 2.6.4
+Stable tag: 2.6.5
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -142,6 +142,13 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](http://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.6.5 =
+* Avoid the "Class 'QM_Backtrace' not found" error
+* Correct the layout of the Slow Queries and Query Errors panels
+* Move back-compat CSS into its own file
+* Huge simplification of code in `db.php` by using `parent::query()`
+* Misc visual tweaks
 
 = 2.6.4 =
 * Introduce sortable columns for database query times and numbers

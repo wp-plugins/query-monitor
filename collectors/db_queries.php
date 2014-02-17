@@ -19,11 +19,6 @@ if ( !defined( 'SAVEQUERIES' ) )
 if ( !defined( 'QM_DB_EXPENSIVE' ) )
 	define( 'QM_DB_EXPENSIVE', 0.05 );
 
-# QM_DB_LIMIT used to be a hard limit but proved to be more of an annoyance than anything. It now
-# just adds a nag to the top of the query table. I might remove it altogether at some point.
-if ( !defined( 'QM_DB_LIMIT' ) )
-	define( 'QM_DB_LIMIT', 100 );
-
 class QM_Collector_DB_Queries extends QM_Collector {
 
 	public $id = 'db_queries';
@@ -124,12 +119,6 @@ class QM_Collector_DB_Queries extends QM_Collector {
 
 	}
 
-	protected static function query_compat( array & $query ) {
-
-		list( $query['sql'], $query['ltime'], $query['stack'] ) = $query;
-
-	}
-
 	public function process_db_object( $id, wpdb $db ) {
 
 		$rows       = array();
@@ -138,19 +127,15 @@ class QM_Collector_DB_Queries extends QM_Collector {
 
 		foreach ( (array) $db->queries as $query ) {
 
-			if ( ! isset( $query['sql'] ) )
-				self::query_compat( $query );
-
-			if ( false !== strpos( $query['stack'], 'wp_admin_bar' ) and !isset( $_REQUEST['qm_display_admin_bar'] ) )
+			# @TODO: decide what I want to do with this:
+			if ( false !== strpos( $query[2], 'wp_admin_bar' ) and !isset( $_REQUEST['qm_display_admin_bar'] ) )
 				continue;
 
-			$sql           = $query['sql'];
-			$ltime         = $query['ltime'];
-			$stack         = $query['stack'];
-			$has_component = isset( $query['trace'] );
-			$has_results   = isset( $query['result'] );
-			$trace         = null;
-			$component     = null;
+			$sql           = $query[0];
+			$ltime         = $query[1];
+			$stack         = $query[2];
+			$has_trace     = isset( $query['trace'] );
+			$has_result    = isset( $query['result'] );
 
 			if ( isset( $query['result'] ) )
 				$result = $query['result'];
@@ -169,8 +154,10 @@ class QM_Collector_DB_Queries extends QM_Collector {
 
 			} else {
 
-				$callers = explode( ',', $stack );
-				$caller  = trim( end( $callers ) );
+				$trace     = null;
+				$component = null;
+				$callers   = explode( ',', $stack );
+				$caller    = trim( end( $callers ) );
 
 				if ( false !== strpos( $caller, '(' ) )
 					$caller_name = substr( $caller, 0, strpos( $caller, '(' ) ) . '()';
@@ -180,8 +167,8 @@ class QM_Collector_DB_Queries extends QM_Collector {
 			}
 
 			$sql  = trim( $sql );
-			$type = preg_split( '/\b/', $sql );
-			$type = strtoupper( $type[1] );
+			$type = preg_split( '/\b/', $sql, 2, PREG_SPLIT_NO_EMPTY );
+			$type = strtoupper( $type[0] );
 
 			$this->log_type( $type );
 			$this->log_caller( $caller_name, $ltime, $type );
@@ -218,7 +205,7 @@ class QM_Collector_DB_Queries extends QM_Collector {
 
 		# @TODO put errors in here too:
 		# @TODO proper class instead of (object)
-		$this->data['dbs'][$id] = (object) compact( 'rows', 'types', 'has_results', 'has_component', 'total_time', 'total_qs' );
+		$this->data['dbs'][$id] = (object) compact( 'rows', 'types', 'has_result', 'has_trace', 'total_time', 'total_qs' );
 
 	}
 
