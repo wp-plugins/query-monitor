@@ -133,6 +133,10 @@ Long answer: Query Monitor has a small impact on page generation time because it
 
 On pages that have an especially high number of database queries (in the hundreds), Query Monitor currently uses more memory than I would like it to. This is due to the amount of data that is captured in the stack trace for each query. I have been and will be working to continually reduce this.
 
+= Are there any add-on plugins for Query Monitor? =
+
+Yep, the first one was released recently: [Query Monitor bbPress & BuddyPress Conditionals](https://wordpress.org/plugins/query-monitor-bbpress-buddypress-conditionals/) by Stephen Edgar.
+
 = Where can I suggest a new feature or report a bug? =
 
 Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com/johnbillion/QueryMonitor/issues) as it's easier to keep track of issues there, rather than on the wordpress.org support forums.
