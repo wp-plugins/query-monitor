@@ -19,6 +19,7 @@ class QM_Util {
 
 	protected static $file_components = array();
 	protected static $file_dirs       = array();
+	protected static $abspath         = null;
 
 	private function __construct() {}
 
@@ -45,11 +46,13 @@ class QM_Util {
 	public static function standard_dir( $dir, $abspath_replace = null ) {
 
 		$dir = str_replace( '\\', '/', $dir );
-		$dir = preg_replace( '|/+|', '/', $dir );
+		$dir = str_replace( '//', '/', $dir );
 
 		if ( is_string( $abspath_replace ) ) {
-			# @TODO cache the value of self::standard_dir( ABSPATH )
-			$dir = str_replace( self::standard_dir( ABSPATH ), $abspath_replace, $dir );
+			if ( !self::$abspath ) {
+				self::$abspath = self::standard_dir( ABSPATH );
+			}
+			$dir = str_replace( self::$abspath, $abspath_replace, $dir );
 		}
 
 		return $dir;
@@ -172,10 +175,6 @@ class QM_Util {
 		if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) and 'xmlhttprequest' == strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) )
 			return true;
 		return false;
-	}
-
-	public static function wpv() {
-		return 'qm-wp-' . ( floatval( $GLOBALS['wp_version'] ) * 10 );
 	}
 
 	public static function get_admins() {

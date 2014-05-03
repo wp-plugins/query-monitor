@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
 Tested up to: 3.9
-Stable tag: 2.6.6
+Stable tag: 2.6.7
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
@@ -145,7 +145,18 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](http://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
+== Upgrade Notice ==
+
+= 2.6.7 =
+* Various tweaks under the hood. No shiny new features just yet.
+
 == Changelog ==
+
+= 2.6.7 =
+* Use an actual authentication cookie instead of a nonce in the Authentication component
+* Implement some extra methods of determining the current user/group
+* Move the loading of dispatchers to the `plugins_loaded` hook so plugins can add their own
+* Misc performance improvements
 
 = 2.6.6 =
 * More robust support for alternative database drivers (including `mysqli` in core)

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.6
+Version:     2.6.7
 Plugin URI:  https://github.com/johnbillion/query-monitor
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -42,8 +42,9 @@ class QueryMonitor extends QM_Plugin {
 	protected function __construct( $file ) {
 
 		# Actions
-		add_action( 'init',     array( $this, 'action_init' ) );
-		add_action( 'shutdown', array( $this, 'action_shutdown' ), 0 );
+		add_action( 'plugins_loaded', array( $this, 'action_plugins_loaded' ) );
+		add_action( 'init',           array( $this, 'action_init' ) );
+		add_action( 'shutdown',       array( $this, 'action_shutdown' ), 0 );
 
 		# Filters
 		add_filter( 'pre_update_option_active_plugins',               array( $this, 'filter_active_plugins' ) );
@@ -62,6 +63,10 @@ class QueryMonitor extends QM_Plugin {
 
 		foreach ( apply_filters( 'query_monitor_collectors', array() ) as $collector )
 			$this->add_collector( $collector );
+
+	}
+
+	public function action_plugins_loaded() {
 
 		# Dispatchers:
 		foreach ( glob( $this->plugin_path( 'dispatchers/*.php' ) ) as $dispatcher )
@@ -126,15 +131,12 @@ class QueryMonitor extends QM_Plugin {
 		if ( !did_action( 'plugins_loaded' ) )
 			return false;
 
-		if ( is_multisite() ) {
-			if ( current_user_can( 'manage_network_options' ) )
-				return true;
-		} else if ( current_user_can( 'view_query_monitor' ) ) {
+		if ( current_user_can( 'view_query_monitor' ) ) {
 			return true;
 		}
 
 		if ( $auth = self::get_collector( 'authentication' ) )
-			return $auth->user_can_view();
+			return $auth->user_verified();
 
 		return false;
 
@@ -168,7 +170,7 @@ class QueryMonitor extends QM_Plugin {
 		foreach ( $this->get_dispatchers() as $dispatcher ) {
 
 			# At least one dispatcher is active, so we need to process:
-			if ( $dispatcher->active() ) {
+			if ( $dispatcher->is_active() ) {
 				return true;
 			}
 
@@ -190,7 +192,7 @@ class QueryMonitor extends QM_Plugin {
 
 		foreach ( $this->get_dispatchers() as $dispatcher ) {
 
-			if ( ! $dispatcher->active() ) {
+			if ( ! $dispatcher->is_active() ) {
 				continue;
 			}
 
