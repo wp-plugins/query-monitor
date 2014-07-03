@@ -153,7 +153,10 @@ No, I do not accept donations. If you like the plugin, I'd love for you to [leav
 == Changelog ==
 
 = 2.6.8 =
-* Misc minor bugfixes. Nothing to get excited about.
+* RTL layout tweaks
+* Correct the component detection logic so it's more accurate
+* Re-implement output on the login screen which went missing
+* Display a few more proxy and debugging related constants
 
 = 2.6.7 =
 * Use an actual authentication cookie instead of a nonce in the Authentication component
