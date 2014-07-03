@@ -147,10 +147,13 @@ No, I do not accept donations. If you like the plugin, I'd love for you to [leav
 
 == Upgrade Notice ==
 
-= 2.6.7 =
-* Various tweaks under the hood. No shiny new features just yet.
+= 2.6.8 =
+* Misc minor bugfixes. Nothing to get excited about.
 
 == Changelog ==
+
+= 2.6.8 =
+* Misc minor bugfixes. Nothing to get excited about.
 
 = 2.6.7 =
 * Use an actual authentication cookie instead of a nonce in the Authentication component
