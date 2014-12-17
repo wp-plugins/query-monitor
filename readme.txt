@@ -2,7 +2,7 @@
 Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: 2.6.8
 License: GPLv2 or later
 
