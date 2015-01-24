@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,8 +38,12 @@ class QM_Dispatcher_Headers extends QM_Dispatcher {
 
 		require_once $this->qm->plugin_path( 'output/Headers.php' );
 
-		foreach ( glob( $this->qm->plugin_path( 'output/headers/*.php' ) ) as $output ) {
-			include $output;
+		# Using DirectoryIterator rather than glob in order to support Google App Engine (tested on v1.9.10)
+		$output_iterator = new DirectoryIterator( $this->qm->plugin_path( 'output/headers' ) );
+		foreach ( $output_iterator as $output ) {
+			if ( $output->getExtension() === 'php' ) {
+				include $output->getPathname();
+			}
 		}
 
 	}

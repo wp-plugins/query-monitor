@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@ GNU General Public License for more details.
 
 */
 
+if ( ! class_exists( 'QM_Backtrace' ) ) {
 class QM_Backtrace {
 
 	protected static $ignore_class = array(
@@ -75,10 +76,12 @@ class QM_Backtrace {
 		}
 
 
-		if ( $args['ignore_items'] )
+		if ( $args['ignore_items'] ) {
 			$this->ignore( $args['ignore_items'] );
-		if ( $args['ignore_current_filter'] )
+		}
+		if ( $args['ignore_current_filter'] ) {
 			$this->ignore_current_filter();
+		}
 
 	}
 
@@ -108,10 +111,12 @@ class QM_Backtrace {
 			try {
 
 				if ( isset( $item['class'] ) ) {
-					if ( !is_object( $item['class'] ) and !class_exists( $item['class'], false ) )
+					if ( !is_object( $item['class'] ) and !class_exists( $item['class'], false ) ) {
 						continue;
-					if ( !method_exists( $item['class'], $item['function'] ) )
+					}
+					if ( !method_exists( $item['class'], $item['function'] ) ) {
 						continue;
+					}
 					$ref = new ReflectionMethod( $item['class'], $item['function'] );
 					$file = $ref->getFileName();
 				} else if ( function_exists( $item['function'] ) ) {
@@ -132,8 +137,9 @@ class QM_Backtrace {
 		}
 
 		foreach ( QM_Util::get_file_dirs() as $type => $dir ) {
-			if ( isset( $components[$type] ) )
+			if ( isset( $components[$type] ) ) {
 				return $components[$type];
+			}
 		}
 
 		# This should not happen
@@ -151,7 +157,7 @@ class QM_Backtrace {
 			$trace = array_map( array( $this, 'filter_trace' ), $this->trace );
 			$trace = array_values( array_filter( $trace ) );
 
-			if ( empty( $trace ) ) {
+			if ( empty( $trace ) && !empty($this->trace) ) {
 				$lowest                 = $this->trace[0];
 				$file                   = QM_Util::standard_dir( $lowest['file'], '' );
 				$lowest['calling_file'] = $lowest['file'];
@@ -172,8 +178,9 @@ class QM_Backtrace {
 	}
 
 	public function ignore( $num ) {
-		for ( $i = 0; $i < absint( $num ); $i++ )
+		for ( $i = 0; $i < absint( $num ); $i++ ) {
 			unset( $this->trace[$i] );
+		}
 		$this->trace = array_values( $this->trace );
 		return $this;
 	}
@@ -181,8 +188,9 @@ class QM_Backtrace {
 	public function ignore_current_filter() {
 
 		if ( isset( $this->trace[2] ) and isset( $this->trace[2]['function'] ) ) {
-			if ( in_array( $this->trace[2]['function'], array( 'apply_filters', 'do_action' ) ) )
+			if ( in_array( $this->trace[2]['function'], array( 'apply_filters', 'do_action' ) ) ) {
 				$this->ignore( 3 ); # Ignore filter and action callbacks
+			}
 		}
 
 	}
@@ -227,7 +235,7 @@ class QM_Backtrace {
 
 				if ( 'dir' === $show ) {
 					if ( isset( $trace['args'][0] ) ) {
-						$arg = QM_Util::standard_dir( $trace['args'][0], '&hellip;/' );
+						$arg = QM_Util::standard_dir( $trace['args'][0], '~/' );
 						$return['id']      = $trace['function'] . '()';
 						$return['display'] = $trace['function'] . "('{$arg}')";
 					}
@@ -257,13 +265,20 @@ class QM_Backtrace {
 
 		}
 
-		if ( isset( $trace['line'] ) )
+		if ( isset( $trace['line'] ) ) {
 			$this->calling_line = $trace['line'];
-		if ( isset( $trace['file'] ) )
+		}
+		if ( isset( $trace['file'] ) ) {
 			$this->calling_file = $trace['file'];
+		}
 
 		return $return;
 
 	}
+
+}
+} else {
+
+	add_action( 'init', 'QueryMonitor::symlink_warning' );
 
 }

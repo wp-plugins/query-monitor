@@ -3,16 +3,16 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 2.6.8
+Stable tag: 2.6.9
 License: GPLv2 or later
 
-View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.	
+View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
 
 == Description ==
 
 Query Monitor is a debugging plugin for anyone developing with WordPress. It has some advanced features not available in other debugging plugins, including automatic AJAX debugging and the ability to narrow down things by plugin or theme.
 
-For complete information, please see [the Query Monitor home page](https://querymonitor.com/) or [Query Monitor's GitHub repo](https://github.com/johnbillion/QueryMonitor).
+For complete information, please see [Query Monitor's GitHub repo](https://github.com/johnbillion/query-monitor).
 
 Here's an overview of what's shown:
 
@@ -105,7 +105,7 @@ You can install this plugin directly from your WordPress dashboard:
 3. Click *Install Now* next to the Query Monitor plugin.
 4. Activate the plugin.
 
-Alternatively, see the guide to [Manually Installing Plugins](http://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation).
+Alternatively, see the guide to [Manually Installing Plugins](https://codex.wordpress.org/Managing_Plugins#Manual_Plugin_Installation).
 
 == Screenshots ==
 
@@ -143,14 +143,26 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 
 = Do you accept donations? =
 
-No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](http://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
+No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](https://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Upgrade Notice ==
 
-= 2.6.8 =
-* Misc minor bugfixes. Nothing to get excited about.
+= 2.6.9 =
+* New Scripts & Styles component; Support the new admin menu behaviour in WP 4.1; Fix the positioning of output when using the Twenty Fifteen theme.
 
 == Changelog ==
+
+= 2.6.9 =
+* New Scripts & Styles component
+* Support for the new `is_customize_preview()` conditional
+* More robust handling of HTTP requests short-circuited with `pre_http_request`
+* Introduce a `query_monitor_silent_http_error_codes` filter to allow certain `WP_Error` codes to be silenced in HTTP requests
+* Split SQL queries on LEFT, OUTER, and RIGHT too
+* Gracefully avoid fatal errors if a site is moved and the db.php symlink is no longer pointing to the correct location
+* Pause Infinite Scroll when Query Monitor is viewed
+* Support the new admin menu behaviour in WP 4.1
+* Fix the positioning of output when using the Twenty Fifteen theme
+* Switch to an AJAX call for setting and clearing QM's authentication cookie
 
 = 2.6.8 =
 * RTL layout tweaks

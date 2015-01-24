@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,12 +30,12 @@ class QM_Output_Html implements QM_Output {
 		if ( empty( $data ) )
 			return;
 
-		echo '<div class="qm" id="' . $this->collector->id() . '">';
+		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		if ( !empty( $name ) ) {
 			echo '<thead>';
 			echo '<tr>';
-			echo '<th colspan="2">' . $name . '</th>';
+			echo '<th colspan="2">' . esc_html( $name ) . '</th>';
 			echo '</tr>';
 			echo '</thead>';
 		}
@@ -133,7 +132,7 @@ class QM_Output_Html implements QM_Output {
 
 		foreach( array(
 			'ALTER', 'AND', 'COMMIT', 'CREATE', 'DESCRIBE', 'DELETE', 'DROP', 'ELSE', 'END', 'FROM', 'GROUP',
-			'HAVING', 'INNER', 'INSERT', 'LIMIT', 'ON', 'OR', 'ORDER', 'REPLACE', 'ROLLBACK', 'SELECT', 'SET',
+			'HAVING', 'INNER', 'INSERT', 'LEFT', 'LIMIT', 'ON', 'OR', 'ORDER', 'OUTER', 'REPLACE', 'RIGHT', 'ROLLBACK', 'SELECT', 'SET',
 			'SHOW', 'START', 'THEN', 'TRUNCATE', 'UPDATE', 'VALUES', 'WHEN', 'WHERE'
 		) as $cmd )
 			$sql = trim( str_replace( " $cmd ", "<br>$cmd ", $sql ) );

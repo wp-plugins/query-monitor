@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,6 +27,12 @@ class QM_Collector_Transients extends QM_Collector {
 		# See http://core.trac.wordpress.org/ticket/24583
 		add_action( 'setted_site_transient', array( $this, 'action_setted_site_transient' ), 10, 3 );
 		add_action( 'setted_transient',      array( $this, 'action_setted_blog_transient' ), 10, 3 );
+	}
+
+	public function tear_down() {
+		parent::tear_down();
+		remove_action( 'setted_site_transient', array( $this, 'action_setted_site_transient' ), 10 );
+		remove_action( 'setted_transient',      array( $this, 'action_setted_blog_transient' ), 10 );
 	}
 
 	public function action_setted_site_transient( $transient, $value = null, $expiration = null ) {

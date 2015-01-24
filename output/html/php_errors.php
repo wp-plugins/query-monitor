@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,10 +26,11 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data['errors'] ) )
+		if ( empty( $data['errors'] ) ) {
 			return;
+		}
 
-		echo '<div class="qm" id="' . $this->collector->id() . '">';
+		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<thead>';
 		echo '<tr>';
@@ -60,11 +60,17 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 
 				foreach ( $data['errors'][$type] as $error ) {
 
-					if ( !$first )
+					if ( !$first ) {
 						echo '<tr>';
+					}
 
 					$stack     = $error->trace->get_stack();
 					$component = $error->trace->get_component();
+					if ( $component ) {
+						$name = $component->name;
+					} else {
+						$name = '<em>' . __( 'Unknown', 'query-monitor' ) . '</em>';
+					}
 					$stack     = implode( '<br>', $stack );
 					$message   = str_replace( "href='function.", "target='_blank' href='http://php.net/function.", $error->message );
 
@@ -76,7 +82,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 					echo self::output_filename( $output, $error->file, $error->line );
 					echo '</td>';
 					echo '<td class="qm-ltr">' . $stack . '</td>';
-					echo '<td>' . $component->name . '</td>';
+					echo '<td>' . $name . '</td>';
 					echo '</tr>';
 
 					$first = false;
@@ -97,14 +103,15 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		if ( isset( $data['errors']['warning'] ) )
+		if ( isset( $data['errors']['warning'] ) ) {
 			$class[] = 'qm-warning';
-		else if ( isset( $data['errors']['notice'] ) )
+		} else if ( isset( $data['errors']['notice'] ) ) {
 			$class[] = 'qm-notice';
-		else if ( isset( $data['errors']['strict'] ) )
+		} else if ( isset( $data['errors']['strict'] ) ) {
 			$class[] = 'qm-strict';
-		else if ( isset( $data['errors']['deprecated'] ) )
+		} else if ( isset( $data['errors']['deprecated'] ) ) {
 			$class[] = 'qm-deprecated';
+		}
 
 		return $class;
 

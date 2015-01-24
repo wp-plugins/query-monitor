@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -30,31 +29,35 @@ class QM_Output_Html_Conditionals extends QM_Output_Html {
 		$i = 0;
 		$w = floor( 100 / $cols );
 
-		echo '<div class="qm" id="' . $this->collector->id() . '">';
+		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<thead>';
 		echo '<tr>';
-		echo '<th colspan="' . $cols . '">' . $this->collector->name() . '</th>';
+		echo '<th colspan="' . $cols . '">' . esc_html( $this->collector->name() ) . '</th>';
 		echo '</tr>';
 		echo '</thead>';
 		echo '<tbody>';
 
 		foreach ( $data['conds']['true'] as $cond ) {
 			$i++;
-			if ( 1 === $i%$cols )
+			if ( 1 === $i%$cols ) {
 				echo '<tr>';
+			}
 			echo '<td class="qm-ltr qm-true" width="' . $w . '%">' . $cond . '()</td>';
-			if ( 0 === $i%$cols )
+			if ( 0 === $i%$cols ) {
 				echo '</tr>';
+			}
 		}
 
 		foreach ( $data['conds']['false'] as $cond ) {
 			$i++;
-			if ( 1 === $i%$cols )
+			if ( 1 === $i%$cols ) {
 				echo '<tr>';
+			}
 			echo '<td class="qm-ltr qm-false" width="' . $w . '%">' . $cond . '()</td>';
-			if ( 0 === $i%$cols )
+			if ( 0 === $i%$cols ) {
 				echo '</tr>';
+			}
 		}
 
 		$fill = ( $cols - ( $i % $cols ) );

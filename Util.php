@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,6 +14,7 @@ GNU General Public License for more details.
 
 */
 
+if ( ! class_exists( 'QM_Util' ) ) {
 class QM_Util {
 
 	protected static $file_components = array();
@@ -34,8 +34,9 @@ class QM_Util {
 		if ( $bytes ) {
 			$last = strtolower( substr( $size, -1 ) );
 			$pos = strpos( ' kmg', $last, 1);
-			if ( $pos )
+			if ( $pos ) {
 				$bytes *= pow( 1024, $pos );
+			}
 			$bytes = round( $bytes );
 		}
 
@@ -67,8 +68,9 @@ class QM_Util {
 
 		# @TODO turn this into a class (eg QM_File_Component)
 
-		if ( isset( self::$file_components[$file] ) )
+		if ( isset( self::$file_components[$file] ) ) {
 			return self::$file_components[$file];
+		}
 
 		if ( empty( self::$file_dirs ) ) {
 			self::$file_dirs['plugin']     = self::standard_dir( WP_PLUGIN_DIR );
@@ -80,9 +82,12 @@ class QM_Util {
 		}
 
 		foreach ( self::$file_dirs as $type => $dir ) {
-			if ( 0 === strpos( $file, $dir ) )
+			if ( 0 === strpos( $file, $dir ) ) {
 				break;
+			}
 		}
+
+		$context = $type;
 
 		switch ( $type ) {
 			case 'plugin':
@@ -94,7 +99,8 @@ class QM_Util {
 				} else {
 					$plug = basename( $plug );
 				}
-				$name = sprintf( __( 'Plugin: %s', 'query-monitor' ), $plug );
+				$name    = sprintf( __( 'Plugin: %s', 'query-monitor' ), $plug );
+				$context = $plug;
 				break;
 			case 'stylesheet':
 				$name = __( 'Theme', 'query-monitor' );
@@ -103,7 +109,8 @@ class QM_Util {
 				$name = __( 'Parent Theme', 'query-monitor' );
 				break;
 			case 'other':
-				$name = self::standard_dir( $file, '' );
+				$name    = self::standard_dir( $file, '' );
+				$context = $file;
 				break;
 			case 'core':
 			default:
@@ -111,7 +118,7 @@ class QM_Util {
 				break;
 		}
 
-		return self::$file_components[$file] = (object) compact( 'type', 'name' );
+		return self::$file_components[$file] = (object) compact( 'type', 'name', 'context' );
 
 	}
 
@@ -128,10 +135,11 @@ class QM_Util {
 
 			if ( is_array( $callback['function'] ) ) {
 
-				if ( is_object( $callback['function'][0] ) )
+				if ( is_object( $callback['function'][0] ) ) {
 					$class = get_class( $callback['function'][0] );
-				else
+				} else {
 					$class = $callback['function'][0];
+				}
 
 				$callback['name'] = $class . $access . $callback['function'][1] . '()';
 				$ref = new ReflectionMethod( $class, $callback['function'][1] );
@@ -164,28 +172,33 @@ class QM_Util {
 	}
 
 	public static function is_ajax() {
-		if ( defined( 'DOING_AJAX' ) and DOING_AJAX )
+		if ( defined( 'DOING_AJAX' ) and DOING_AJAX ) {
 			return true;
+		}
 		return false;
 	}
 
 	public static function is_async() {
-		if ( self::is_ajax() )
+		if ( self::is_ajax() ) {
 			return true;
-		if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) and 'xmlhttprequest' == strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) )
+		}
+		if ( isset( $_SERVER['HTTP_X_REQUESTED_WITH'] ) and 'xmlhttprequest' == strtolower( $_SERVER['HTTP_X_REQUESTED_WITH'] ) ) {
 			return true;
+		}
 		return false;
 	}
 
 	public static function get_admins() {
-		if ( is_multisite() )
+		if ( is_multisite() ) {
 			return false;
-		else
+		} else {
 			return get_role( 'administrator' );
+		}
 	}
 
 	public static function get_current_url() {
 		return ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 	}
 
+}
 }

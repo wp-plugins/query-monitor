@@ -1,6 +1,5 @@
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,6 +17,7 @@ GNU General Public License for more details.
 	color: #8c8 !important;
 }
 
+#wpadminbar .quicklinks .menupop ul li.qm-true > a:focus,
 #wpadminbar .quicklinks .menupop ul li.qm-true > a:hover {
 	color: #4a4 !important;
 }
@@ -124,6 +124,11 @@ GNU General Public License for more details.
 	display: none;
 }
 
+#qm.qm-absolute {
+	z-index: 9999 !important;
+	position: absolute !important;
+}
+
 #qm.qm-show,
 .no-js #qm,
 .nojs #qm {
@@ -137,22 +142,19 @@ GNU General Public License for more details.
 	height: 0 !important;
 }
 
-body.wp-admin #qm {
-	margin: 0 !important;
+body:not(.iframe).wp-admin #qm {
+	margin: 0 0 0 160px !important;
 }
 
-body:not(.iframe).sticky-menu #qm {
-	margin-left: 160px !important;
-}
-
-@media all and (max-width: 900px) {
-	body:not(.iframe).sticky-menu #qm {
-		margin-left: 36px !important;
-	}
-}
-
-body:not(.iframe).sticky-menu.folded #qm {
+body:not(.iframe).wp-admin.auto-fold #qm,
+body:not(.iframe).wp-admin.folded #qm {
 	margin-left: 36px !important;
+}
+
+@media screen and (max-width: 782px) {
+	body:not(.iframe).wp-admin #qm {
+		margin-left: 0 !important;
+	}
 }
 
 #qm-wrapper {
@@ -183,6 +185,14 @@ body.js #qm-wrapper {
 	clear: none !important;
 }
 
+@media all and (max-width: 900px) {
+	.qm-half {
+		float: none !important;
+		width: 100% !important;
+		clear: both !important;
+	}
+}
+
 .qm-clear {
 	clear: left !important;
 }
@@ -193,6 +203,8 @@ body.js #qm-wrapper {
 	border-style: hidden !important;
 	box-shadow: 0 0 0 1px #ddd, 0 1px 2px 1px rgba(0,0,0,0.05) !important;
 	width: 100% !important;
+	table-layout: auto !important;
+	margin: 0 !important;
 }
 
 .qm td,
@@ -328,6 +340,7 @@ body.js #qm-wrapper {
 	border: 1px solid transparent !important;
 }
 
+.qm a.qm-toggle:focus,
 .qm a.qm-toggle:hover {
 	text-decoration: none !important;
 	border-color: #e1e1e1 !important;
@@ -390,8 +403,8 @@ select.qm-filter {
 .qm .qm-sort {
 	color: #ddd !important;
 	display: block !important;
-	font-size: 11px !important;
-	line-height: 9px !important;
+	font-size: 14px !important;
+	line-height: 11px !important;
 	text-decoration: none !important;
 }
 
@@ -399,7 +412,7 @@ select.qm-filter {
 .qm .qm-sort:focus,
 .qm .qm-sorted-asc .qm-sort-asc,
 .qm .qm-sorted-desc .qm-sort-desc {
-	color: #888 !important;
+	color: #777 !important;
 	text-decoration: none !important;
 }
 

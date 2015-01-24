@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -41,7 +40,7 @@ class QM_Output_Html_Overview extends QM_Output_Html {
 
 		$total_stime = number_format_i18n( $data['time'], 4 );
 
-		echo '<div class="qm" id="' . $this->collector->id() . '">';
+		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 
 		$memory_usage = '<br><span class="qm-info">' . sprintf( __( '%1$s%% of %2$s kB limit', 'query-monitor' ), number_format_i18n( $data['memory_usage'], 1 ), number_format_i18n( $data['memory_limit'] / 1024 ) ) . '</span>';
@@ -73,8 +72,9 @@ class QM_Output_Html_Overview extends QM_Output_Html {
 			echo "<td>{$db_stime}</td>";
 			echo '<td>';
 
-			foreach ( $db_query_num as $type_name => $type_count )
+			foreach ( $db_query_num as $type_name => $type_count ) {
 				$db_query_types[] = sprintf( '%1$s: %2$s', $type_name, number_format_i18n( $type_count ) );
+			}
 
 			echo implode( '<br>', $db_query_types );
 

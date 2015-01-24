@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,14 +25,15 @@ class QM_Output_Html_Admin extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data ) )
+		if ( empty( $data ) ) {
 			return;
+		}
 
-		echo '<div class="qm qm-half" id="' . $this->collector->id() . '">';
+		echo '<div class="qm qm-half" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<thead>';
 		echo '<tr>';
-		echo '<th colspan="2">' . $this->collector->name() . '</th>';
+		echo '<th colspan="2">' . esc_html( $this->collector->name() ) . '</th>';
 		echo '</tr>';
 		echo '</thead>';
 		echo '<tbody>';
@@ -79,24 +79,27 @@ class QM_Output_Html_Admin extends QM_Output_Html {
 
 			# And now, WordPress' legendary inconsistency comes into play:
 
-			if ( !empty( $data['current_screen']->taxonomy ) )
+			if ( !empty( $data['current_screen']->taxonomy ) ) {
 				$col = $data['current_screen']->taxonomy;
-			else if ( !empty( $data['current_screen']->post_type ) )
+			} else if ( !empty( $data['current_screen']->post_type ) ) {
 				$col = $data['current_screen']->post_type . '_posts';
-			else
+			} else {
 				$col = $data['current_screen']->base;
+			}
 
-			if ( !empty( $data['current_screen']->post_type ) and empty( $data['current_screen']->taxonomy ) )
+			if ( !empty( $data['current_screen']->post_type ) and empty( $data['current_screen']->taxonomy ) ) {
 				$cols = $data['current_screen']->post_type . '_posts';
-			else
+			} else {
 				$cols = $data['current_screen']->id;
+			}
 
-			if ( 'edit-comments' == $col )
+			if ( 'edit-comments' == $col ) {
 				$col = 'comments';
-			else if ( 'upload' == $col )
+			} else if ( 'upload' == $col ) {
 				$col = 'media';
-			else if ( 'link-manager' == $col )
+			} else if ( 'link-manager' == $col ) {
 				$col = 'link';
+			}
 
 			echo '<tr>';
 			echo '<td rowspan="2">' . __( 'Column Filters', 'query-monitor' ) . '</td>';

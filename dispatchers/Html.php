@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -96,7 +95,13 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 			'query-monitor',
 			'qm_l10n',
 			array(
-				'ajax_error' => __( 'PHP Error in AJAX Response', 'query-monitor' ),
+				'ajax_error'            => __( 'PHP Error in AJAX Response', 'query-monitor' ),
+				'infinitescroll_paused' => __( 'Infinite Scroll has been paused by Query Monitor', 'query-monitor' ),
+				'ajaxurl'               => admin_url( 'admin-ajax.php' ),
+				'auth_nonce' => array(
+					'on'         => wp_create_nonce( 'qm-auth-on' ),
+					'off'        => wp_create_nonce( 'qm-auth-off' ),
+				),
 			)
 		);
 
@@ -115,16 +120,27 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 
 		require_once $this->qm->plugin_path( 'output/Html.php' );
 
-		foreach ( glob( $this->qm->plugin_path( 'output/html/*.php' ) ) as $output ) {
-			include $output;
+		$output_iterator = new DirectoryIterator( $this->qm->plugin_path( 'output/html' ) );
+		foreach ( $output_iterator as $output ) {
+			if ( $output->getExtension() === 'php' ) {
+				include $output->getPathname();
+			}
 		}
 
-		if ( !is_admin_bar_showing() )
-			$class = 'qm-show';
-		else
-			$class = '';
+		$class = array();
 
-		echo '<div id="qm" class="' . $class . '">';
+		if ( !is_admin() ) {
+			$absolute = function_exists( 'twentyfifteen_setup' );
+			if ( apply_filters( 'query_monitor_absolute_position', $absolute ) ) {
+				$class[] = 'qm-absolute';
+			}
+		}
+
+		if ( !is_admin_bar_showing() ) {
+			$class[] = 'qm-show';
+		}
+
+		echo '<div id="qm" class="' . implode( ' ', $class ) . '">';
 		echo '<div id="qm-wrapper">';
 		echo '<p>' . __( 'Query Monitor', 'query-monitor' ) . '</p>';
 
@@ -155,8 +171,9 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 		$class = implode( ' ', apply_filters( 'query_monitor_class', array() ) );
 		$title = implode( '&nbsp;&nbsp;&nbsp;', apply_filters( 'query_monitor_title', array() ) );
 
-		if ( empty( $title ) )
+		if ( empty( $title ) ) {
 			$title = __( 'Query Monitor', 'query-monitor' );
+		}
 
 		$admin_bar_menu = array(
 			'top' => array(
@@ -166,8 +183,9 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 			'sub' => array()
 		);
 
-		foreach ( apply_filters( 'query_monitor_menus', array() ) as $menu )
+		foreach ( apply_filters( 'query_monitor_menus', array() ) as $menu ) {
 			$admin_bar_menu['sub'][] = $menu;
+		}
 
 		return $admin_bar_menu;
 

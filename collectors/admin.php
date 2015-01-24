@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,18 +22,15 @@ class QM_Collector_Admin extends QM_Collector {
 		return __( 'Admin Screen', 'query-monitor' );
 	}
 
-	public function __construct() {
-		parent::__construct();
-	}
-
 	public function process() {
 
 		global $pagenow;
 
-		if ( isset( $_GET['page'] ) )
+		if ( isset( $_GET['page'] ) ) {
 			$this->data['base'] = get_current_screen()->base;
-		else
+		} else {
 			$this->data['base'] = $pagenow;
+		}
 
 		$this->data['pagenow'] = $pagenow;
 		$this->data['current_screen'] = get_current_screen();
@@ -43,8 +40,9 @@ class QM_Collector_Admin extends QM_Collector {
 }
 
 function register_qm_collector_admin( array $qm ) {
-	if ( is_admin() )
+	if ( is_admin() ) {
 		$qm['admin'] = new QM_Collector_Admin;
+	}
 	return $qm;
 }
 

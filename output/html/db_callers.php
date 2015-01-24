@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,24 +25,26 @@ class QM_Output_Html_DB_Callers extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data ) )
+		if ( empty( $data ) ) {
 			return;
+		}
 
 		$total_time  = 0;
 		$span = count( $data['types'] ) + 2;
 
-		echo '<div class="qm qm-half" id="' . $this->collector->id() . '">';
+		echo '<div class="qm qm-half" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0" class="qm-sortable">';
 		echo '<thead>';
 		echo '<tr>';
-		echo '<th colspan="' . $span . '">' . $this->collector->name() . '</th>';
+		echo '<th colspan="' . $span . '">' . esc_html( $this->collector->name() ) . '</th>';
 		echo '</tr>';
 		echo '<tr>';
 		echo '<th>' . _x( 'Caller', 'Query caller', 'query-monitor' ) . '</th>';
 
 		if ( !empty( $data['types'] ) ) {
-			foreach ( $data['types'] as $type_name => $type_count )
+			foreach ( $data['types'] as $type_name => $type_count ) {
 				echo '<th class="qm-num">' . $type_name . $this->build_sorter() . '</th>';
+			}
 		}
 
 		echo '<th class="qm-num qm-sorted-desc">' . __( 'Time', 'query-monitor' ) . $this->build_sorter() . '</th>';
@@ -62,10 +63,11 @@ class QM_Output_Html_DB_Callers extends QM_Output_Html {
 				echo "<td valign='top' class='qm-ltr'>{$row['caller']}</td>";
 
 				foreach ( $data['types'] as $type_name => $type_count ) {
-					if ( isset( $row['types'][$type_name] ) )
+					if ( isset( $row['types'][$type_name] ) ) {
 						echo "<td valign='top'>{$row['types'][$type_name]}</td>";
-					else
+					} else {
 						echo "<td valign='top'>&nbsp;</td>";
+					}
 				}
 
 				echo "<td valign='top'>{$stime}</td>";
@@ -81,8 +83,9 @@ class QM_Output_Html_DB_Callers extends QM_Output_Html {
 			echo '<tr>';
 			echo '<td>&nbsp;</td>';
 
-			foreach ( $data['types'] as $type_name => $type_count )
+			foreach ( $data['types'] as $type_name => $type_count ) {
 				echo '<td>' . number_format_i18n( $type_count ) . '</td>';
+			}
 
 			echo "<td>{$total_stime}</td>";
 			echo '</tr>';

@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,15 +25,17 @@ class QM_Output_Html_Transients extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		echo '<div class="qm" id="' . $this->collector->id() . '">';
+		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<thead>';
 		echo '<tr>';
 		echo '<th>' . __( 'Transient Set', 'query-monitor' ) . '</th>';
-		if ( is_multisite() )
+		if ( is_multisite() ) {
 			echo '<th>' . __( 'Type', 'query-monitor' ) . '</th>';
-		if ( !empty( $data['trans'] ) and isset( $data['trans'][0]['expiration'] ) )
+		}
+		if ( !empty( $data['trans'] ) and isset( $data['trans'][0]['expiration'] ) ) {
 			echo '<th>' . __( 'Expiration', 'query-monitor' ) . '</th>';
+		}
 		echo '<th>' . __( 'Call Stack', 'query-monitor' ) . '</th>';
 		echo '<th>' . __( 'Component', 'query-monitor' ) . '</th>';
 		echo '</tr>';
@@ -51,8 +52,9 @@ class QM_Output_Html_Transients extends QM_Output_Html {
 					'_transient_'
 				), '', $row['transient'] );
 				$type = ( is_multisite() ) ? "<td valign='top'>{$row['type']}</td>\n" : '';
-				if ( 0 === $row['expiration'] )
+				if ( 0 === $row['expiration'] ) {
 					$row['expiration'] = '<em>' . __( 'none', 'query-monitor' ) . '</em>';
+				}
 				$expiration = ( isset( $row['expiration'] ) ) ? "<td valign='top'>{$row['expiration']}</td>\n" : '';
 
 				$component = $row['trace']->get_component();

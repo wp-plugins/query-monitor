@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +25,7 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		echo '<div id="' . $this->collector->id() . '">';
+		echo '<div id="' . esc_attr( $this->collector->id() ) . '">';
 
 		echo '<div class="qm qm-half">';
 		echo '<table cellspacing="0">';
@@ -54,8 +53,9 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 
 			$append = '';
 
-			if ( $val['after'] != $val['before'] )
+			if ( $val['after'] != $val['before'] ) {
 				$append .= '<br><span class="qm-info">' . sprintf( __( 'Overridden at runtime from %s', 'query-monitor' ), $val['before'] ) . '</span>';
+			}
 
 			echo '<tr>';
 			echo "<td>{$key}</td>";
@@ -78,10 +78,11 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 
 			foreach ( $data['db'] as $id => $db ) {
 
-				if ( 1 == count( $data['db'] ) )
-					$name = 'MySQL';
-				else
-					$name = 'MySQL: ' . $id;
+				if ( 1 == count( $data['db'] ) ) {
+					$name = 'Database';
+				} else {
+					$name = 'Database: ' . $id;
+				}
 
 				echo '<div class="qm qm-half">';
 				echo '<table cellspacing="0">';
@@ -93,13 +94,13 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 				echo '<tbody>';
 
 				echo '<tr>';
-				echo '<td>version</td>';
-				echo '<td>' . $db['version'] . '</td>';
+				echo '<td>driver</td>';
+				echo '<td>' . $db['driver'] . '</td>';
 				echo '</tr>';
 
 				echo '<tr>';
-				echo '<td>driver</td>';
-				echo '<td>' . $db['driver'] . '</td>';
+				echo '<td>version</td>';
+				echo '<td>' . $db['version'] . '</td>';
 				echo '</tr>';
 
 				echo '<tr>';
@@ -130,21 +131,25 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 					$prepend = '';
 					$show_warning = false;
 
-					if ( ( true === $db['vars'][$key] ) and empty( $val ) )
+					if ( ( true === $db['vars'][$key] ) and empty( $val ) ) {
 						$show_warning = true;
-					else if ( is_string( $db['vars'][$key] ) and ( $val !== $db['vars'][$key] ) )
+					} else if ( is_string( $db['vars'][$key] ) and ( $val !== $db['vars'][$key] ) ) {
 						$show_warning = true;
+					}
 
-					if ( $show_warning )
+					if ( $show_warning ) {
 						$prepend .= '&nbsp;<span class="qm-info">(<a href="' . esc_url( sprintf( $search, $key ) ) . '" target="_blank" title="' . esc_attr( sprintf( $warn, $key ) ) . '">' . __( 'Help', 'query-monitor' ) . '</a>)</span>';
+					}
 
-					if ( is_numeric( $val ) and ( $val >= ( 1024*1024 ) ) )
+					if ( is_numeric( $val ) and ( $val >= ( 1024*1024 ) ) ) {
 						$prepend .= '<br><span class="qm-info">~' . size_format( $val ) . '</span>';
+					}
 
 					$class = ( $show_warning ) ? 'qm-warn' : '';
 
-					if ( !$first )
+					if ( !$first ) {
 						echo "<tr class='{$class}'>";
+					}
 
 					$key = esc_html( $key );
 					$val = esc_html( $val );

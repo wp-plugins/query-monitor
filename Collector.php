@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -14,11 +14,12 @@ GNU General Public License for more details.
 
 */
 
+if ( ! class_exists( 'QM_Collector' ) ) {
 abstract class QM_Collector {
 
 	protected $data = array();
 
-	protected function __construct() {}
+	public function __construct() {}
 
 	final public function id() {
 		return "qm-{$this->id}";
@@ -46,12 +47,16 @@ abstract class QM_Collector {
 	}
 
 	public static function sort_ltime( $a, $b ) {
-		if ( $a['ltime'] == $b['ltime'] )
+		if ( $a['ltime'] == $b['ltime'] ) {
 			return 0;
-		else
+		} else {
 			return ( $a['ltime'] > $b['ltime'] ) ? -1 : 1;
+		}
 	}
 
 	public function process() {}
 
+	public function tear_down() {}
+
+}
 }

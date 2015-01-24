@@ -1,6 +1,5 @@
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -93,6 +92,15 @@ jQuery( function($) {
 			if ( is_admin ) {
 				$('#wpfooter').css('position','relative');
 			}
+			if ( window.infinite_scroll && infinite_scroll.contentSelector ) {
+
+				$( infinite_scroll.contentSelector ).infinitescroll('pause');
+
+				if ( window.console ) {
+					console.log( qm_l10n.infinitescroll_paused );
+				}
+
+			}
 			$('#qm').show();
 		});
 
@@ -178,6 +186,17 @@ jQuery( function($) {
 	if ( is_admin ) {
 		$('#qm').detach().appendTo('#wpwrap');
 	}
+
+	$('.qm-auth').on('click',function(e){
+		var action = $(this).data('action');
+		$.post(qm_l10n.ajaxurl,{
+			action : 'qm_auth_' + action,
+			nonce  : qm_l10n.auth_nonce[action]
+		},function(response){
+			alert( response.data );
+		});
+		e.preventDefault();
+	})
 
 	$.qm.tableSort({target: $('.qm-sortable'), debug: false});
 

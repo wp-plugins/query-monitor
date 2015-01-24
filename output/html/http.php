@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,7 +28,7 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 
 		$total_time = 0;
 
-		echo '<div class="qm" id="' . $this->collector->id() . '">';
+		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<thead>';
 		echo '<tr>';
@@ -59,40 +58,44 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 
 			foreach ( $data['http'] as $key => $row ) {
 				$ltime = $row['ltime'];
-				$total_time += $ltime;
 
-				if ( empty( $ltime ) )
+				if ( empty( $ltime ) ) {
 					$stime = '';
-				else
+				} else {
 					$stime = number_format_i18n( $ltime, 4 );
+				}
 
 				if ( is_wp_error( $row['response'] ) ) {
-					$response = $row['response']->get_error_message();
+					$response = esc_html( $row['response']->get_error_message() );
 					$css      = 'qm-warn';
 				} else {
 					$response = wp_remote_retrieve_response_code( $row['response'] );
 					$msg      = wp_remote_retrieve_response_message( $row['response'] );
 					$css      = '';
 
-					if ( empty( $response ) )
+					if ( empty( $response ) ) {
 						$response = __( 'n/a', 'query-monitor' );
-					else
+					} else {
 						$response = esc_html( $response . ' ' . $msg );
+					}
 
-					if ( intval( $response ) >= 400 )
+					if ( intval( $response ) >= 400 ) {
 						$css = 'qm-warn';
+					}
 
 				}
 
 				$method = $row['args']['method'];
-				if ( !$row['args']['blocking'] )
+				if ( !$row['args']['blocking'] ) {
 					$method .= '&nbsp;' . _x( '(non-blocking)', 'non-blocking HTTP transport', 'query-monitor' );
+				}
 				$url = self::format_url( $row['url'] );
 
-				if ( isset( $row['transport'] ) )
+				if ( isset( $row['transport'] ) ) {
 					$transport = $row['transport'];
-				else
+				} else {
 					$transport = '';
+				}
 
 				$stack     = $row['trace']->get_stack();
 				$component = $row['trace']->get_component();
@@ -114,7 +117,7 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 			echo '</tbody>';
 			echo '<tfoot>';
 
-			$total_stime = number_format_i18n( $total_time, 4 );
+			$total_stime = number_format_i18n( $data['ltime'], 4 );
 
 			echo '<tr>';
 			echo '<td colspan="6">' . $vars . '</td>';
@@ -146,10 +149,11 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		if ( isset( $data['errors']['error'] ) )
+		if ( isset( $data['errors']['error'] ) ) {
 			$class[] = 'qm-error';
-		else if ( isset( $data['errors']['warning'] ) )
+		} else if ( isset( $data['errors']['warning'] ) ) {
 			$class[] = 'qm-warning';
+		}
 
 		return $class;
 
@@ -169,10 +173,11 @@ class QM_Output_Html_HTTP extends QM_Output_Html {
 			'title' => sprintf( $title, number_format_i18n( $count ) ),
 		);
 
-		if ( isset( $data['errors']['error'] ) )
+		if ( isset( $data['errors']['error'] ) ) {
 			$args['meta']['classname'] = 'qm-error';
-		else if ( isset( $data['errors']['warning'] ) )
+		} else if ( isset( $data['errors']['warning'] ) ) {
 			$args['meta']['classname'] = 'qm-warning';
+		}
 
 		$menu[] = $this->menu( $args );
 

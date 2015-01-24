@@ -1,6 +1,6 @@
 <?php
 /*
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -17,10 +17,6 @@ GNU General Public License for more details.
 class QM_Collector_Request extends QM_Collector {
 
 	public $id = 'request';
-
-	public function __construct() {
-		parent::__construct();
-	}
 
 	public function name() {
 		return __( 'Request', 'query-monitor' );
@@ -49,11 +45,13 @@ class QM_Collector_Request extends QM_Collector {
 
 		foreach ( $qvars as $k => $v ) {
 			if ( isset( $plugin_qvars[$k] ) ) {
-				if ( '' !== $v )
+				if ( '' !== $v ) {
 					$query_vars[$k] = $v;
+				}
 			} else {
-				if ( !empty( $v ) )
+				if ( !empty( $v ) ) {
 					$query_vars[$k] = $v;
+				}
 			}
 		}
 
@@ -69,8 +67,9 @@ class QM_Collector_Request extends QM_Collector {
 
 		# Now add all other vars to $this->data['qvars']:
 		foreach ( $query_vars as $k => $v ) {
-			if ( !isset( $plugin_qvars[$k] ) )
+			if ( !isset( $plugin_qvars[$k] ) ) {
 				$this->data['qvars'][$k] = $v;
+			}
 		}
 
 		switch ( true ) {

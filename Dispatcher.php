@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -15,6 +14,7 @@ GNU General Public License for more details.
 
 */
 
+if ( ! class_exists( 'QM_Dispatcher' ) ) {
 abstract class QM_Dispatcher {
 
 	public function __construct( QM_Plugin $qm ) {
@@ -54,4 +54,5 @@ abstract class QM_Dispatcher {
 
 	}
 
+}
 }

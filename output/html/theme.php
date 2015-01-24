@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,10 +25,11 @@ class QM_Output_Html_Theme extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data ) )
+		if ( empty( $data ) ) {
 			return;
+		}
 
-		echo '<div class="qm qm-half" id="' . $this->collector->id() . '">';
+		echo '<div class="qm qm-half" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<tbody>';
 
@@ -58,8 +58,9 @@ class QM_Output_Html_Theme extends QM_Output_Html {
 
 			foreach ( $data['body_class'] as $class ) {
 
-				if ( !$first )
+				if ( !$first ) {
 					echo '<tr>';
+				}
 
 				echo '<td>' . esc_html( $class ) . '</td>';
 				echo '</tr>';

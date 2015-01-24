@@ -1,7 +1,6 @@
 <?php
 /*
-
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,7 +25,7 @@ class QM_Output_Html_Request extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
-		echo '<div class="qm qm-half" id="' . $this->collector->id() . '">';
+		echo '<div class="qm qm-half" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<tbody>';
 
@@ -37,8 +36,9 @@ class QM_Output_Html_Request extends QM_Output_Html {
 			'query_string'  => __( 'Query String', 'query-monitor' ),
 		) as $item => $name ) {
 
-			if ( !isset( $data['request'][$item] ) )
+			if ( !isset( $data['request'][$item] ) ) {
 				continue;
+			}
 
 			if ( ! empty( $data['request'][$item] ) ) {
 				if ( in_array( $item, array( 'request', 'matched_query', 'query_string' ) ) ) {
@@ -67,13 +67,15 @@ class QM_Output_Html_Request extends QM_Output_Html {
 
 			foreach( $data['qvars'] as $var => $value ) {
 
-				if ( !$first )
+				if ( !$first ) {
 					echo '<tr>';
+				}
 
-				if ( isset( $data['plugin_qvars'][$var] ) )
+				if ( isset( $data['plugin_qvars'][$var] ) ) {
 					echo "<td valign='top'><span class='qm-current'>{$var}</span></td>";
-				else
+				} else {
 					echo "<td valign='top'>{$var}</td>";
+				}
 
 				if ( is_array( $value ) or is_object( $value ) ) {
 					echo '<td valign="top"><pre>';

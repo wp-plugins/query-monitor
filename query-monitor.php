@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.8
+Version:     2.6.9
 Plugin URI:  https://querymonitor.com/
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -10,7 +10,7 @@ Text Domain: query-monitor
 Domain Path: /languages/
 License:     GPL v2 or later
 
-Copyright 2014 John Blackbourn
+Copyright 2009-2015 John Blackbourn
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,13 +26,15 @@ GNU General Public License for more details.
 
 defined( 'ABSPATH' ) or die();
 
-if ( defined( 'QM_DISABLED' ) and QM_DISABLED )
+if ( defined( 'QM_DISABLED' ) and QM_DISABLED ) {
 	return;
+}
 
 # No autoloaders for us. See https://github.com/johnbillion/QueryMonitor/issues/7
 $qm_dir = dirname( __FILE__ );
-foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util', 'Dispatcher', 'Output' ) as $qm_class )
+foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util', 'Dispatcher', 'Output' ) as $qm_class ) {
 	require_once "{$qm_dir}/{$qm_class}.php";
+}
 
 class QueryMonitor extends QM_Plugin {
 
@@ -58,22 +60,32 @@ class QueryMonitor extends QM_Plugin {
 		parent::__construct( $file );
 
 		# Collectors:
-		foreach ( glob( $this->plugin_path( 'collectors/*.php' ) ) as $collector )
-			include $collector;
+		$collector_iterator = new DirectoryIterator( $this->plugin_path( 'collectors' ) );
+		foreach ( $collector_iterator as $collector ) {
+			if ( $collector->getExtension() === 'php' ) {
+				include $collector->getPathname();
+			}
+		}
 
-		foreach ( apply_filters( 'query_monitor_collectors', array() ) as $collector )
+		foreach ( apply_filters( 'query_monitor_collectors', array() ) as $collector ) {
 			$this->add_collector( $collector );
+		}
 
 	}
 
 	public function action_plugins_loaded() {
 
 		# Dispatchers:
-		foreach ( glob( $this->plugin_path( 'dispatchers/*.php' ) ) as $dispatcher )
-			include $dispatcher;
+		$dispatcher_iterator = new DirectoryIterator( $this->plugin_path( 'dispatchers' ) );
+		foreach ( $dispatcher_iterator as $dispatcher ) {
+			if ( $dispatcher->getExtension() === 'php' ) {
+				include $dispatcher->getPathname();
+			}
+		}
 
-		foreach ( apply_filters( 'query_monitor_dispatchers', array(), $this ) as $dispatcher )
+		foreach ( apply_filters( 'query_monitor_dispatchers', array(), $this ) as $dispatcher ) {
 			$this->add_dispatcher( $dispatcher );
+		}
 
 	}
 
@@ -87,8 +99,9 @@ class QueryMonitor extends QM_Plugin {
 
 	public static function get_collector( $id ) {
 		$qm = self::init();
-		if ( isset( $qm->collectors[$id] ) )
+		if ( isset( $qm->collectors[$id] ) ) {
 			return $qm->collectors[$id];
+		}
 		return false;
 	}
 
@@ -102,41 +115,48 @@ class QueryMonitor extends QM_Plugin {
 
 	public function activate( $sitewide = false ) {
 
-		if ( $admins = QM_Util::get_admins() )
+		if ( $admins = QM_Util::get_admins() ) {
 			$admins->add_cap( 'view_query_monitor' );
+		}
 
-		if ( ! file_exists( $db = WP_CONTENT_DIR . '/db.php' ) and function_exists( 'symlink' ) )
+		if ( ! file_exists( $db = WP_CONTENT_DIR . '/db.php' ) and function_exists( 'symlink' ) ) {
 			@symlink( $this->plugin_path( 'wp-content/db.php' ), $db );
+		}
 
-		if ( $sitewide )
+		if ( $sitewide ) {
 			update_site_option( 'active_sitewide_plugins', get_site_option( 'active_sitewide_plugins'  ) );
-		else
+		} else {
 			update_option( 'active_plugins', get_option( 'active_plugins'  ) );
+		}
 
 	}
 
 	public function deactivate() {
 
-		if ( $admins = QM_Util::get_admins() )
+		if ( $admins = QM_Util::get_admins() ) {
 			$admins->remove_cap( 'view_query_monitor' );
+		}
 
 		# Only delete db.php if it belongs to Query Monitor
-		if ( class_exists( 'QueryMonitorDB' ) )
+		if ( class_exists( 'QueryMonitorDB' ) ) {
 			unlink( WP_CONTENT_DIR . '/db.php' );
+		}
 
 	}
 
 	public function user_can_view() {
 
-		if ( !did_action( 'plugins_loaded' ) )
+		if ( !did_action( 'plugins_loaded' ) ) {
 			return false;
+		}
 
 		if ( current_user_can( 'view_query_monitor' ) ) {
 			return true;
 		}
 
-		if ( $auth = self::get_collector( 'authentication' ) )
+		if ( $auth = self::get_collector( 'authentication' ) ) {
 			return $auth->user_verified();
+		}
 
 		return false;
 
@@ -187,6 +207,7 @@ class QueryMonitor extends QM_Plugin {
 		}
 
 		foreach ( $this->get_collectors() as $collector ) {
+			$collector->tear_down();
 			$collector->process();
 		}
 
@@ -218,7 +239,11 @@ class QueryMonitor extends QM_Plugin {
 
 	}
 
-	public function filter_active_plugins( array $plugins ) {
+	public function filter_active_plugins( $plugins ) {
+
+		if ( empty( $plugins ) ) {
+			return $plugins;
+		}
 
 		$f = preg_quote( basename( $this->plugin_base() ) );
 
@@ -229,7 +254,11 @@ class QueryMonitor extends QM_Plugin {
 
 	}
 
-	public function filter_active_sitewide_plugins( array $plugins ) {
+	public function filter_active_sitewide_plugins( $plugins ) {
+
+		if ( empty( $plugins ) ) {
+			return $plugins;
+		}
 
 		$f = $this->plugin_base();
 
@@ -247,12 +276,18 @@ class QueryMonitor extends QM_Plugin {
 
 	}
 
+	public static function symlink_warning() {
+		$db = WP_CONTENT_DIR . '/db.php';
+		trigger_error( sprintf( __( 'The symlink at <code>%s</code> is no longer pointing to the correct location. Please remove the symlink, then deactivate and reactivate Query Monitor.', 'query-monitor' ), $db ), E_USER_WARNING );
+	}
+
 	public static function init( $file = null ) {
 
 		static $instance = null;
 
-		if ( ! $instance )
+		if ( ! $instance ) {
 			$instance = new QueryMonitor( $file );
+		}
 
 		return $instance;
 
