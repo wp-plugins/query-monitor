@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.9
+Version:     2.6.10
 Plugin URI:  https://querymonitor.com/
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -60,12 +60,7 @@ class QueryMonitor extends QM_Plugin {
 		parent::__construct( $file );
 
 		# Collectors:
-		$collector_iterator = new DirectoryIterator( $this->plugin_path( 'collectors' ) );
-		foreach ( $collector_iterator as $collector ) {
-			if ( $collector->getExtension() === 'php' ) {
-				include $collector->getPathname();
-			}
-		}
+		QM_Util::include_files( $this->plugin_path( 'collectors' ) );
 
 		foreach ( apply_filters( 'query_monitor_collectors', array() ) as $collector ) {
 			$this->add_collector( $collector );
@@ -76,12 +71,7 @@ class QueryMonitor extends QM_Plugin {
 	public function action_plugins_loaded() {
 
 		# Dispatchers:
-		$dispatcher_iterator = new DirectoryIterator( $this->plugin_path( 'dispatchers' ) );
-		foreach ( $dispatcher_iterator as $dispatcher ) {
-			if ( $dispatcher->getExtension() === 'php' ) {
-				include $dispatcher->getPathname();
-			}
-		}
+		QM_Util::include_files( $this->plugin_path( 'dispatchers' ) );
 
 		foreach ( apply_filters( 'query_monitor_dispatchers', array(), $this ) as $dispatcher ) {
 			$this->add_dispatcher( $dispatcher );
@@ -144,24 +134,6 @@ class QueryMonitor extends QM_Plugin {
 
 	}
 
-	public function user_can_view() {
-
-		if ( !did_action( 'plugins_loaded' ) ) {
-			return false;
-		}
-
-		if ( current_user_can( 'view_query_monitor' ) ) {
-			return true;
-		}
-
-		if ( $auth = self::get_collector( 'authentication' ) ) {
-			return $auth->user_verified();
-		}
-
-		return false;
-
-	}
-
 	public function should_process() {
 
 		# Don't process if the minimum required actions haven't fired:
@@ -183,7 +155,7 @@ class QueryMonitor extends QM_Plugin {
 		$e = error_get_last();
 
 		# Don't process if a fatal has occurred:
-		if ( ! empty( $e ) and ( 1 === $e['type'] ) ) {
+		if ( ! empty( $e ) and ( $e['type'] & ( E_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR ) ) ) {
 			return false;
 		}
 
@@ -278,7 +250,7 @@ class QueryMonitor extends QM_Plugin {
 
 	public static function symlink_warning() {
 		$db = WP_CONTENT_DIR . '/db.php';
-		trigger_error( sprintf( __( 'The symlink at <code>%s</code> is no longer pointing to the correct location. Please remove the symlink, then deactivate and reactivate Query Monitor.', 'query-monitor' ), $db ), E_USER_WARNING );
+		trigger_error( sprintf( __( 'The symlink at %s is no longer pointing to the correct location. Please remove the symlink, then deactivate and reactivate Query Monitor.', 'query-monitor' ), "<code>{$db}</code>" ), E_USER_WARNING );
 	}
 
 	public static function init( $file = null ) {

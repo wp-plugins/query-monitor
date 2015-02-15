@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
 Tested up to: 4.1
-Stable tag: 2.6.9
+Stable tag: 2.6.10
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
@@ -89,6 +89,7 @@ Hands up who can remember the correct names for the filters and actions for cust
  * Shows any **transients that were set**, along with their timeout, component, and call stack
  * Shows all **WordPress conditionals** on the current page, highlighted nicely
  * Shows an overview including page generation time and memory limit as absolute values and as % of their respective limits
+ * Shows all *scripts and styles* which were enqueued on the current page, along with their path, dependencies, and version number
 
 = Authentication =
 
@@ -139,7 +140,7 @@ Yep, the first one was released recently: [Query Monitor bbPress & BuddyPress Co
 
 = Where can I suggest a new feature or report a bug? =
 
-Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com/johnbillion/QueryMonitor/issues) as it's easier to keep track of issues there, rather than on the wordpress.org support forums.
+Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com/johnbillion/query-monitor/issues) as it's easier to keep track of issues there, rather than on the wordpress.org support forums.
 
 = Do you accept donations? =
 
@@ -147,10 +148,18 @@ No, I do not accept donations. If you like the plugin, I'd love for you to [leav
 
 == Upgrade Notice ==
 
-= 2.6.9 =
-* New Scripts & Styles component; Support the new admin menu behaviour in WP 4.1; Fix the positioning of output when using the Twenty Fifteen theme.
+= 2.6.10 =
+* Fix some PHP 5.2 compatibility issues introduced in 2.6.9; More tweaks to the CSS so QM avoids being covered up by the admin menu.
 
 == Changelog ==
+
+= 2.6.10 =
+* Add compatibility with PHP <5.3.6. `DirectoryIterator::getExtension()` isn't available on this version (and also as it's part of SPL it can be disabled).
+* Simplify the admin CSS to avoid QM's output being covered by the admin menu.
+* Add support for footer styles in the scripts and styles component.
+* Update the authentication JavaScript so it works cross-protocol.
+* Add support for footer styles in the scripts and styles component.
+* Update the authentication JavaScript so it works cross-protocol.
 
 = 2.6.9 =
 * New Scripts & Styles component
