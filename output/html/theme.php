@@ -18,37 +18,47 @@ class QM_Output_Html_Theme extends QM_Output_Html {
 
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 60 );
+		add_filter( 'qm/output/menus', array( $this, 'admin_menu' ), 60 );
 	}
 
 	public function output() {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data ) ) {
+		if ( empty( $data['stylesheet'] ) ) {
 			return;
 		}
+
+		$child_theme = ( $data['stylesheet'] != $data['template'] );
 
 		echo '<div class="qm qm-half" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
 		echo '<tbody>';
 
 		echo '<tr>';
-		echo '<td>' . __( 'Theme', 'query-monitor' ) . '</td>';
+		echo '<td>' . __( 'Template File', 'query-monitor' ) . '</td>';
+		if ( $child_theme ) {
+			echo '<td>' . self::output_filename( $data['theme_template'], $data['template_path'] ) . '</td>';
+		} else {
+			echo '<td>' . self::output_filename( $data['template_file'], $data['template_path'] ) . '</td>';
+		}
+		echo '</tr>';
+
+		echo '<tr>';
+		if ( $child_theme ) {
+			echo '<td>' . __( 'Child Theme', 'query-monitor' ) . '</td>';
+		} else {
+			echo '<td>' . __( 'Theme', 'query-monitor' ) . '</td>';
+		}
 		echo '<td>' . esc_html( $data['stylesheet'] ) . '</td>';
 		echo '</tr>';
 
-		if ( $data['stylesheet'] != $data['template'] ) {
+		if ( $child_theme ) {
 			echo '<tr>';
 			echo '<td>' . __( 'Parent Theme', 'query-monitor' ) . '</td>';
 			echo '<td>' . esc_html( $data['template'] ) . '</td>';
 			echo '</tr>';
 		}
-
-		echo '<tr>';
-		echo '<td>' . __( 'Template File', 'query-monitor' ) . '</td>';
-		echo '<td>' . self::output_filename( $data['template_file'], $data['template_path'] ) . '</td>';
-		echo '</tr>';
 
 		if ( !empty( $data['body_class'] ) ) {
 
@@ -92,8 +102,11 @@ class QM_Output_Html_Theme extends QM_Output_Html {
 
 }
 
-function register_qm_output_html_theme( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_Theme( $collector );
+function register_qm_output_html_theme( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'theme' ) ) {
+		$output['theme'] = new QM_Output_Html_Theme( $collector );
+	}
+	return $output;
 }
 
-add_filter( 'query_monitor_output_html_theme', 'register_qm_output_html_theme', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_theme', 70, 2 );

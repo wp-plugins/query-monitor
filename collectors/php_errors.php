@@ -30,6 +30,7 @@ if ( defined( 'E_USER_DEPRECATED' ) ) {
 class QM_Collector_PHP_Errors extends QM_Collector {
 
 	public $id = 'php_errors';
+	private $display_errors = null;
 
 	public function name() {
 		return __( 'PHP Errors', 'query-monitor' );
@@ -39,6 +40,9 @@ class QM_Collector_PHP_Errors extends QM_Collector {
 
 		parent::__construct();
 		set_error_handler( array( $this, 'error_handler' ) );
+
+		$this->display_errors = ini_get( 'display_errors' );
+		ini_set( 'display_errors', 0 );
 
 	}
 
@@ -103,20 +107,17 @@ class QM_Collector_PHP_Errors extends QM_Collector {
 
 		}
 
-		return apply_filters( 'query_monitor_php_errors_return_value', true );
+		return apply_filters( 'qm/collect/php_errors_return_value', false );
 
 	}
 
 	public function tear_down() {
 		parent::tear_down();
+		ini_set( 'display_errors', $this->display_errors );
 		restore_error_handler();
 	}
 
 }
 
-function register_qm_collector_php_errors( array $qm ) {
-	$qm['php_errors'] = new QM_Collector_PHP_Errors;
-	return $qm;
-}
-
-add_filter( 'query_monitor_collectors', 'register_qm_collector_php_errors', 110 );
+# Load early to catch early errors
+QM_Collectors::add( new QM_Collector_PHP_Errors );

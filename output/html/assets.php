@@ -16,85 +16,92 @@ GNU General Public License for more details.
 
 class QM_Output_Html_Assets extends QM_Output_Html {
 
-	public $id = 'hooks';
-
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 70 );
+		add_filter( 'qm/output/menus',      array( $this, 'admin_menu' ), 70 );
+		add_filter( 'qm/output/menu_class', array( $this, 'admin_class' ) );
 	}
 
 	public function output() {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data ) ) {
+		if ( empty( $data['raw'] ) ) {
 			return;
 		}
 
 		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
 		echo '<table cellspacing="0">';
-		echo '<thead>';
-		echo '<tr>';
-		echo '<th colspan="2">' . esc_html( $this->collector->name() ) . '</th>';
-		echo '<th>' . __( 'Dependencies', 'query-monitor' ) . '</th>';
-	//	echo '<th>' . __( 'Component', 'query-monitor' ) . '</th>';
-		echo '<th>' . __( 'Version', 'query-monitor' ) . '</th>';
-		echo '</tr>';
-		echo '</thead>';
-		echo '<tbody>';
 
-		// @TODO concat, do_concat, concat_version
+		foreach ( array(
+			'scripts' => __( 'Scripts', 'query-monitor' ),
+			'styles'  => __( 'Styles', 'query-monitor' ),
+		) as $type => $type_label ) {
 
-		$rowspan = count( $data['header_scripts'] );
+			echo '<thead>';
 
-		echo '<tr>';
-		echo "<td valign='top' rowspan='{$rowspan}'>" . __( 'Header&nbsp;Scripts', 'query-monitor' ) . "</td>";	
+			if ( 'scripts' != $type ) {
+				echo '<tr class="qm-totally-legit-spacer">';
+				echo '<td colspan="6"></td>';
+				echo '</tr>';
+			}
 
-		$this->dependency_rows( $data['header_scripts'], $data['raw_scripts'] );
+			echo '<tr>';
+			echo '<th colspan="2">' . $type_label . '</th>';
+			echo '<th>' . __( 'Dependencies', 'query-monitor' ) . '</th>';
+			echo '<th>' . __( 'Dependents', 'query-monitor' ) . '</th>';
+			echo '<th>' . __( 'Version', 'query-monitor' ) . '</th>';
+			echo '</tr>';
+			echo '</thead>';
+			echo '<tbody>';
 
-		$rowspan = count( $data['footer_scripts'] );
+			foreach ( array(
+				'broken'  => __( 'Missing Dependencies', 'query-monitor' ),
+				'header'  => __( 'Header %s', 'query-monitor' ),
+				'footer'  => __( 'Footer %s', 'query-monitor' ),
+			) as $position => $position_label ) {
 
-		echo '<tr>';
-		echo "<td valign='top' rowspan='{$rowspan}'>" . __( 'Footer&nbsp;Scripts', 'query-monitor' ) . "</td>";	
+				if ( isset( $data[ $position ][ $type ] ) ) {
+					$this->dependency_rows( $data[ $position ][ $type ], $data['raw'][ $type ], sprintf( $position_label, $type_label ) );
+				}
 
-		$this->dependency_rows( $data['footer_scripts'], $data['raw_scripts'] );
+			}
 
-		$rowspan = count( $data['header_styles'] );
+			echo '</tbody>';
 
-		echo '<tr>';
-		echo "<td valign='top' rowspan='{$rowspan}'>" . __( 'Header&nbsp;Styles', 'query-monitor' ) . "</td>";	
+		}
 
-		$this->dependency_rows( $data['header_styles'], $data['raw_styles'] );
-
-		$rowspan = count( $data['footer_styles'] );
-
-		echo '<tr>';
-		echo "<td valign='top' rowspan='{$rowspan}'>" . __( 'Footer&nbsp;Styles', 'query-monitor' ) . "</td>";	
-
-		$this->dependency_rows( $data['footer_styles'], $data['raw_styles'] );
-
-		echo '</tbody>';
 		echo '</table>';
 		echo '</div>';
 
 	}
 
-	protected function dependency_rows( array $handles, WP_Dependencies $dependencies ) {
+	protected function dependency_rows( array $handles, WP_Dependencies $dependencies, $label ) {
 
 		$first = true;
 
 		if ( empty( $handles ) ) {
-			echo '<td valign="top" colspan="3"><em>' . __( 'none', 'query-monitor' ) . '</em></td>';
+			echo '<tr>';
+			echo '<td valign="top" class="qm-nowrap">' . $label . '</td>';	
+			echo '<td valign="top" colspan="5"><em>' . __( 'none', 'query-monitor' ) . '</em></td>';
 			echo '</tr>';
 			return;
 		}
 
 		foreach ( $handles as $handle ) {
-			if ( !$first ) {
-				echo '<tr>';
+
+			if ( in_array( $handle, $dependencies->done ) ) {
+				echo '<tr data-qm-subject="' . $handle . '">';
+			} else {
+				echo '<tr data-qm-subject="' . $handle . '" class="qm-warn">';
 			}
 
-			$this->dependency_row( $dependencies->registered[$handle], $dependencies );
+			if ( $first ) {
+				$rowspan = count( $handles );
+				echo "<th valign='top' rowspan='{$rowspan}' class='qm-nowrap'>" . $label . "</th>";	
+			}
+
+			$this->dependency_row( $dependencies->query( $handle ), $dependencies );
 
 			echo '</tr>';
 			$first = false;
@@ -104,22 +111,8 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 
 	protected function dependency_row( _WP_Dependency $script, WP_Dependencies $dependencies ) {
 
-	//	$path = $script->src;
-
-	//	if ( preg_match( '#^//#', $path ) ) {
-	//		$path = is_ssl() ? 'https:' . $path : 'http:' . $path;
-	//	} else if ( preg_match( '#^/#', $path ) ) {
-	//		$path = home_url( $path );
-	//	} else {
-	//		$path = set_url_scheme( $path );
-	//	}
-
-	//	$path      = str_replace( set_url_scheme( WP_PLUGIN_URL ), WP_PLUGIN_DIR, $path );
-	//	$path      = str_replace( set_url_scheme( WP_CONTENT_URL ), WP_CONTENT_DIR, $path );
-	//	$component = QM_Util::get_file_component( $path );
-
 		if ( empty( $script->ver ) ) {
-			$ver = '<em class="qm-info">' . $dependencies->default_version . '</em>';
+			$ver = '&nbsp;';
 		} else {
 			$ver = esc_html( $script->ver );
 		}
@@ -130,26 +123,78 @@ class QM_Output_Html_Assets extends QM_Output_Html {
 			$src = $script->src;
 		}
 
-		echo '<td valign="top">' . $script->handle . '<br><span class="qm-info">' . $src . '</span></td>';
-		echo '<td valign="top">' . implode( '<br>', $script->deps ) . '</td>';
-	//	echo '<td valign="top">' . $component->name . '</td>';
+		$dependents = self::get_dependents( $script, $dependencies );
+		$deps = $script->deps;
+		sort( $deps );
+
+		foreach ( $deps as & $dep ) {
+			if ( ! $dependencies->query( $dep ) ) {
+				$dep = sprintf( __( '%s (missing)', 'query-monitor' ), $dep );
+			}
+		}
+
+		echo '<td valign="top" class="qm-wrap">' . $script->handle . '<br><span class="qm-info">' . $src . '</span></td>';
+		echo '<td valign="top" class="qm-nowrap qm-highlighter" data-qm-highlight="' . implode( ' ', $deps ) . '">' . implode( '<br>', $deps ) . '</td>';
+		echo '<td valign="top" class="qm-nowrap qm-highlighter" data-qm-highlight="' . implode( ' ', $dependents ) . '">' . implode( '<br>', $dependents ) . '</td>';
 		echo '<td valign="top">' . $ver . '</td>';
+
+	}
+
+	protected static function get_dependents( _WP_Dependency $script, WP_Dependencies $dependencies ) {
+
+		// @TODO move this into the collector
+		$dependents = array();
+		$handles    = array_unique( array_merge( $dependencies->queue, $dependencies->done ) );
+
+		foreach ( $handles as $handle ) {
+			$item = $dependencies->query( $handle );
+			if ( in_array( $script->handle, $item->deps ) ) {
+				$dependents[] = $handle;
+			}
+		}
+
+		sort( $dependents );
+
+		return $dependents;
+
+	}
+
+	public function admin_class( array $class ) {
+
+		$data = $this->collector->get_data();
+
+		if ( !empty( $data['broken'] ) ) {
+			$class[] = 'qm-error';
+		}
+
+		return $class;
 
 	}
 
 	public function admin_menu( array $menu ) {
 
-		$menu[] = $this->menu( array(
-			'title' => $this->collector->name(),
-		) );
+		$data = $this->collector->get_data();
+		$args = array(
+			'title' => $this->collector->name()
+		);
+
+		if ( !empty( $data['broken'] ) ) {
+			$args['meta']['classname'] = 'qm-error';
+		}
+
+		$menu[] = $this->menu( $args );
+
 		return $menu;
 
 	}
 
 }
 
-function register_qm_output_html_assets( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_Assets( $collector );
+function register_qm_output_html_assets( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'assets' ) ) {
+		$output['assets'] = new QM_Output_Html_Assets( $collector );
+	}
+	return $output;
 }
 
-add_filter( 'query_monitor_output_html_assets', 'register_qm_output_html_assets', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_assets', 80, 2 );

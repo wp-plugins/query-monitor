@@ -31,18 +31,16 @@ if ( defined( 'QM_DISABLED' ) and QM_DISABLED ) {
 
 # No autoloaders for us. See https://github.com/johnbillion/QueryMonitor/issues/7
 $qm_dir = dirname( dirname( __FILE__ ) );
-foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util' ) as $qm_class ) {
-	if ( ! is_readable( $qm_file = "{$qm_dir}/{$qm_class}.php" ) ) {
-		return;
-	}
-	require_once $qm_file;
+if ( ! is_readable( $backtrace = "{$qm_dir}/classes/Backtrace.php" ) ) {
+	return;
 }
+require_once $backtrace;
 
 if ( !defined( 'SAVEQUERIES' ) ) {
 	define( 'SAVEQUERIES', true );
 }
 
-class QueryMonitorDB extends wpdb {
+class QM_DB extends wpdb {
 
 	public $qm_php_vars = array(
 		'max_execution_time'  => null,
@@ -105,4 +103,4 @@ class QueryMonitorDB extends wpdb {
 
 }
 
-$wpdb = new QueryMonitorDB( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );
+$wpdb = new QM_DB( DB_USER, DB_PASSWORD, DB_NAME, DB_HOST );

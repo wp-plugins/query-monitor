@@ -20,7 +20,6 @@ class QM_Backtrace {
 	protected static $ignore_class = array(
 		'wpdb'           => true,
 		'QueryMonitor'   => true,
-		'QueryMonitorDB' => true,
 		'ExtQuery'       => true,
 		'W3_Db'          => true,
 		'Debug_Bar_PHP'  => true,
@@ -46,7 +45,6 @@ class QM_Backtrace {
 		'do_action_ref_array'     => 1,
 		'apply_filters_ref_array' => 1,
 		'get_template_part'       => 2,
-		'section_template'        => 2,
 		'load_template'           => 'dir',
 		'get_header'              => 1,
 		'get_sidebar'             => 1,
@@ -200,10 +198,10 @@ class QM_Backtrace {
 		if ( !self::$filtered and function_exists( 'did_action' ) and did_action( 'plugins_loaded' ) ) {
 
 			# Only run apply_filters on these once
-			self::$ignore_class  = apply_filters( 'query_monitor_ignore_class',  self::$ignore_class );
-			self::$ignore_method = apply_filters( 'query_monitor_ignore_method', self::$ignore_method );
-			self::$ignore_func   = apply_filters( 'query_monitor_ignore_func',   self::$ignore_func );
-			self::$show_args     = apply_filters( 'query_monitor_show_args',     self::$show_args );
+			self::$ignore_class  = apply_filters( 'qm/trace/ignore_class',  self::$ignore_class );
+			self::$ignore_method = apply_filters( 'qm/trace/ignore_method', self::$ignore_method );
+			self::$ignore_func   = apply_filters( 'qm/trace/ignore_func',   self::$ignore_func );
+			self::$show_args     = apply_filters( 'qm/trace/show_args',     self::$show_args );
 			self::$filtered = true;
 
 		}

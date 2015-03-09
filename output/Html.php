@@ -14,47 +14,22 @@ GNU General Public License for more details.
 
 */
 
-class QM_Output_Html implements QM_Output {
+abstract class QM_Output_Html implements QM_Output {
 
 	protected static $file_link_format = null;
+
+	abstract public function output();
 
 	public function __construct( QM_Collector $collector ) {
 		$this->collector = $collector;
 	}
 
-	public function output() {
+	public function admin_menu( array $menu ) {
 
-		$data = $this->collector->get_data();
-		$name = $this->collector->name();
-
-		if ( empty( $data ) )
-			return;
-
-		echo '<div class="qm" id="' . esc_attr( $this->collector->id() ) . '">';
-		echo '<table cellspacing="0">';
-		if ( !empty( $name ) ) {
-			echo '<thead>';
-			echo '<tr>';
-			echo '<th colspan="2">' . esc_html( $name ) . '</th>';
-			echo '</tr>';
-			echo '</thead>';
-		}
-		echo '<tbody>';
-
-		foreach ( $data as $key => $value ) {
-			echo '<tr>';
-			echo '<td>' . esc_html( $key ) . '</td>';
-			if ( is_object( $value ) or is_array( $value ) ) {
-				echo '<td><pre>' . print_r( $value, true ) . '</pre></td>';
-			} else {
-				echo '<td>' . esc_html( $value ) . '</td>';
-			}
-			echo '</tr>';
-		}
-
-		echo '</tbody>';
-		echo '</table>';
-		echo '</div>';
+		$menu[] = $this->menu( array(
+			'title' => $this->collector->name(),
+		) );
+		return $menu;
 
 	}
 
@@ -91,15 +66,20 @@ class QM_Output_Html implements QM_Output {
 
 	}
 
-	protected function build_filter( $name, array $values ) {
+	protected function build_filter( $name, array $values, $highlight = '' ) {
+
+		if ( empty( $values ) ) {
+			return '';
+		}
 
 		usort( $values, 'strcasecmp' );
 
-		$out = '<select id="qm-filter-' . esc_attr( $this->collector->id . '-' . $name ) . '" class="qm-filter" data-filter="' . esc_attr( $this->collector->id . '-' . $name ) . '">';
+		$out = '<select id="qm-filter-' . esc_attr( $this->collector->id . '-' . $name ) . '" class="qm-filter" data-filter="' . esc_attr( $name ) . '" data-highlight="' . esc_attr( $highlight ) . '">';
 		$out .= '<option value="">' . _x( 'All', '"All" option for filters', 'query-monitor' ) . '</option>';
 
-		foreach ( $values as $value )
+		foreach ( $values as $value ) {
 			$out .= '<option value="' . esc_attr( $value ) . '">' . esc_html( $value ) . '</option>';
+		}
 
 		$out .= '</select>';
 
@@ -134,8 +114,12 @@ class QM_Output_Html implements QM_Output {
 			'ALTER', 'AND', 'COMMIT', 'CREATE', 'DESCRIBE', 'DELETE', 'DROP', 'ELSE', 'END', 'FROM', 'GROUP',
 			'HAVING', 'INNER', 'INSERT', 'LEFT', 'LIMIT', 'ON', 'OR', 'ORDER', 'OUTER', 'REPLACE', 'RIGHT', 'ROLLBACK', 'SELECT', 'SET',
 			'SHOW', 'START', 'THEN', 'TRUNCATE', 'UPDATE', 'VALUES', 'WHEN', 'WHERE'
-		) as $cmd )
+		) as $cmd ) {
 			$sql = trim( str_replace( " $cmd ", "<br>$cmd ", $sql ) );
+		}
+
+		# @TODO profile this as an alternative:
+		# $sql = preg_replace( '# (ALTER|AND|COMMIT|CREATE|DESCRIBE) #', '<br>$1 ', $sql );
 
 		return $sql;
 
@@ -159,15 +143,16 @@ class QM_Output_Html implements QM_Output {
 
 		# Further reading:
 		# http://simonwheatley.co.uk/2012/07/clickable-stack-traces/
-		# https://github.com/dhoulb/subl
+		# https://github.com/grych/subl-handler
 
 		if ( !isset( self::$file_link_format ) ) {
 			$format = ini_get( 'xdebug.file_link_format' );
-			$format = apply_filters( 'query_monitor_file_link_format', $format );
-			if ( empty( $format ) )
+			$format = apply_filters( 'qm/output/file_link_format', $format );
+			if ( empty( $format ) ) {
 				self::$file_link_format = false;
-			else
+			} else {
 				self::$file_link_format = str_replace( array( '%f', '%l' ), array( '%1$s', '%2$d' ), $format );
+			}
 		}
 
 		if ( false === self::$file_link_format ) {

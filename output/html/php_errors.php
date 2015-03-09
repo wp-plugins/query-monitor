@@ -18,8 +18,8 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 10 );
-		add_filter( 'query_monitor_class', array( $this, 'admin_class' ) );
+		add_filter( 'qm/output/menus', array( $this, 'admin_menu' ), 10 );
+		add_filter( 'qm/output/menu_class', array( $this, 'admin_class' ) );
 	}
 
 	public function output() {
@@ -35,7 +35,7 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 		echo '<thead>';
 		echo '<tr>';
 		echo '<th colspan="2">' . __( 'PHP Error', 'query-monitor' ) . '</th>';
-		echo '<th>' . __( 'Count', 'query-monitor' ) . '</th>';
+		echo '<th class="qm-num">' . __( 'Count', 'query-monitor' ) . '</th>';
 		echo '<th>' . __( 'Location', 'query-monitor' ) . '</th>';
 		echo '<th>' . __( 'Call Stack', 'query-monitor' ) . '</th>';
 		echo '<th>' . __( 'Component', 'query-monitor' ) . '</th>';
@@ -81,8 +81,8 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 					echo '<td>';
 					echo self::output_filename( $output, $error->file, $error->line );
 					echo '</td>';
-					echo '<td class="qm-ltr">' . $stack . '</td>';
-					echo '<td>' . $name . '</td>';
+					echo '<td class="qm-nowrap qm-ltr">' . $stack . '</td>';
+					echo '<td class="qm-nowrap">' . $name . '</td>';
 					echo '</tr>';
 
 					$first = false;
@@ -151,8 +151,11 @@ class QM_Output_Html_PHP_Errors extends QM_Output_Html {
 
 }
 
-function register_qm_output_html_php_errors( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_PHP_Errors( $collector );
+function register_qm_output_html_php_errors( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'php_errors' ) ) {
+		$output['php_errors'] = new QM_Output_Html_PHP_Errors( $collector );
+	}
+	return $output;
 }
 
-add_filter( 'query_monitor_output_html_php_errors', 'register_qm_output_html_php_errors', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_php_errors', 110, 2 );

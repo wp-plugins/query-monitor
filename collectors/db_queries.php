@@ -56,24 +56,16 @@ class QM_Collector_DB_Queries extends QM_Collector {
 		$this->data['total_time'] = 0;
 		$this->data['errors']     = array();
 
-		$this->db_objects = apply_filters( 'query_monitor_db_objects', array(
+		$this->db_objects = apply_filters( 'qm/collect/db_objects', array(
 			'$wpdb' => $GLOBALS['wpdb']
 		) );
 
 		foreach ( $this->db_objects as $name => $db ) {
 			if ( is_a( $db, 'wpdb' ) ) {
 				$this->process_db_object( $name, $db );
+			} else {
+				unset( $this->db_objects[ $name ] );
 			}
-		}
-
-	}
-
-	protected function log_type( $type ) {
-
-		if ( isset( $this->data['types'][$type] ) ) {
-			$this->data['types'][$type]++;
-		} else {
-			$this->data['types'][$type] = 1;
 		}
 
 	}
@@ -96,28 +88,6 @@ class QM_Collector_DB_Queries extends QM_Collector {
 			$this->data['times'][$caller]['types'][$type]++;
 		} else {
 			$this->data['times'][$caller]['types'][$type] = 1;
-		}
-
-	}
-
-	protected function log_component( $component, $ltime, $type ) {
-
-		if ( !isset( $this->data['component_times'][$component->name] ) ) {
-			$this->data['component_times'][$component->name] = array(
-				'component' => $component->name,
-				'calls'     => 0,
-				'ltime'     => 0,
-				'types'     => array()
-			);
-		}
-
-		$this->data['component_times'][$component->name]['calls']++;
-		$this->data['component_times'][$component->name]['ltime'] += $ltime;
-
-		if ( isset( $this->data['component_times'][$component->name]['types'][$type] ) ) {
-			$this->data['component_times'][$component->name]['types'][$type]++;
-		} else {
-			$this->data['component_times'][$component->name]['types'][$type] = 1;
 		}
 
 	}
@@ -224,9 +194,9 @@ class QM_Collector_DB_Queries extends QM_Collector {
 
 }
 
-function register_qm_collector_db_queries( array $qm ) {
-	$qm['db_queries'] = new QM_Collector_DB_Queries;
-	return $qm;
+function register_qm_collector_db_queries( array $collectors, QueryMonitor $qm ) {
+	$collectors['db_queries'] = new QM_Collector_DB_Queries;
+	return $collectors;
 }
 
-add_filter( 'query_monitor_collectors', 'register_qm_collector_db_queries', 20 );
+add_filter( 'qm/collectors', 'register_qm_collector_db_queries', 10, 2 );

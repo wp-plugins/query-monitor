@@ -18,7 +18,7 @@ class QM_Output_Html_Transients extends QM_Output_Html {
 
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus',   array( $this, 'admin_menu' ), 80 );
+		add_filter( 'qm/output/menus', array( $this, 'admin_menu' ), 100 );
 	}
 
 	public function output() {
@@ -65,8 +65,8 @@ class QM_Output_Html_Transients extends QM_Output_Html {
 						<td valign='top'>{$transient}</td>\n
 						{$type}
 						{$expiration}
-						<td valign='top' class='qm-ltr'>{$stack}</td>\n
-						<td valign='top'>{$component->name}</td>\n
+						<td valign='top' class='qm-nowrap qm-ltr'>{$stack}</td>\n
+						<td valign='top' class='qm-nowrap'>{$component->name}</td>\n
 					</tr>\n
 				";
 			}
@@ -106,8 +106,11 @@ class QM_Output_Html_Transients extends QM_Output_Html {
 
 }
 
-function register_qm_output_html_transients( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_Transients( $collector );
+function register_qm_output_html_transients( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'transients' ) ) {
+		$output['transients'] = new QM_Output_Html_Transients( $collector );
+	}
+	return $output;
 }
 
-add_filter( 'query_monitor_output_html_transients', 'register_qm_output_html_transients', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_transients', 100, 2 );

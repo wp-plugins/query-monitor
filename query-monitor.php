@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.6.10
+Version:     2.7.0
 Plugin URI:  https://querymonitor.com/
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -32,14 +32,11 @@ if ( defined( 'QM_DISABLED' ) and QM_DISABLED ) {
 
 # No autoloaders for us. See https://github.com/johnbillion/QueryMonitor/issues/7
 $qm_dir = dirname( __FILE__ );
-foreach ( array( 'Backtrace', 'Collector', 'Plugin', 'Util', 'Dispatcher', 'Output' ) as $qm_class ) {
-	require_once "{$qm_dir}/{$qm_class}.php";
+foreach ( array( 'Backtrace', 'Collectors', 'Collector', 'Plugin', 'Util', 'Dispatchers', 'Dispatcher', 'Output' ) as $qm_class ) {
+	require_once "{$qm_dir}/classes/{$qm_class}.php";
 }
 
 class QueryMonitor extends QM_Plugin {
-
-	protected $collectors  = array();
-	protected $dispatchers = array();
 
 	protected function __construct( $file ) {
 
@@ -59,48 +56,26 @@ class QueryMonitor extends QM_Plugin {
 		# Parent setup:
 		parent::__construct( $file );
 
-		# Collectors:
+		# Load and register built-in collectors:
 		QM_Util::include_files( $this->plugin_path( 'collectors' ) );
-
-		foreach ( apply_filters( 'query_monitor_collectors', array() ) as $collector ) {
-			$this->add_collector( $collector );
-		}
 
 	}
 
 	public function action_plugins_loaded() {
 
+		# Register additional collectors:
+		foreach ( apply_filters( 'qm/collectors', array(), $this ) as $collector ) {
+			QM_Collectors::add( $collector );
+		}
+
 		# Dispatchers:
 		QM_Util::include_files( $this->plugin_path( 'dispatchers' ) );
 
-		foreach ( apply_filters( 'query_monitor_dispatchers', array(), $this ) as $dispatcher ) {
-			$this->add_dispatcher( $dispatcher );
+		# Register built-in and additional dispatchers:
+		foreach ( apply_filters( 'qm/dispatchers', array(), $this ) as $dispatcher ) {
+			QM_Dispatchers::add( $dispatcher );
 		}
 
-	}
-
-	public function add_collector( QM_Collector $collector ) {
-		$this->collectors[$collector->id] = $collector;
-	}
-
-	public function add_dispatcher( QM_Dispatcher $dispatcher ) {
-		$this->dispatchers[$dispatcher->id] = $dispatcher;
-	}
-
-	public static function get_collector( $id ) {
-		$qm = self::init();
-		if ( isset( $qm->collectors[$id] ) ) {
-			return $qm->collectors[$id];
-		}
-		return false;
-	}
-
-	public function get_collectors() {
-		return $this->collectors;
-	}
-
-	public function get_dispatchers() {
-		return $this->dispatchers;
 	}
 
 	public function activate( $sitewide = false ) {
@@ -128,13 +103,15 @@ class QueryMonitor extends QM_Plugin {
 		}
 
 		# Only delete db.php if it belongs to Query Monitor
-		if ( class_exists( 'QueryMonitorDB' ) ) {
+		if ( class_exists( 'QM_DB' ) ) {
 			unlink( WP_CONTENT_DIR . '/db.php' );
 		}
 
 	}
 
 	public function should_process() {
+
+		# @TODO this decision should be moved to each dispatcher
 
 		# Don't process if the minimum required actions haven't fired:
 
@@ -158,8 +135,15 @@ class QueryMonitor extends QM_Plugin {
 		if ( ! empty( $e ) and ( $e['type'] & ( E_ERROR | E_USER_ERROR | E_RECOVERABLE_ERROR ) ) ) {
 			return false;
 		}
+		
+		# Allow users to disable the processing and output
+		if ( ! apply_filters( 'qm/process', true, is_admin_bar_showing() ) ) {
+			return false;
+		}
 
-		foreach ( $this->get_dispatchers() as $dispatcher ) {
+		$dispatchers = QM_Dispatchers::init();
+
+		foreach ( $dispatchers as $dispatcher ) {
 
 			# At least one dispatcher is active, so we need to process:
 			if ( $dispatcher->is_active() ) {
@@ -174,16 +158,22 @@ class QueryMonitor extends QM_Plugin {
 
 	public function action_shutdown() {
 
+		# @TODO this should move to each dispatcher so it can decide when it wants to do its output
+		# eg. the JSON dispatcher needs to output inside the 'json_post_dispatch' filter, not on shutdown
+
 		if ( ! $this->should_process() ) {
 			return;
 		}
 
-		foreach ( $this->get_collectors() as $collector ) {
+		$collectors  = QM_Collectors::init();
+		$dispatchers = QM_Dispatchers::init();
+
+		foreach ( $collectors as $collector ) {
 			$collector->tear_down();
 			$collector->process();
 		}
 
-		foreach ( $this->get_dispatchers() as $dispatcher ) {
+		foreach ( $dispatchers as $dispatcher ) {
 
 			if ( ! $dispatcher->is_active() ) {
 				continue;
@@ -191,8 +181,10 @@ class QueryMonitor extends QM_Plugin {
 
 			$dispatcher->before_output();
 
-			foreach ( $this->get_collectors() as $collector ) {
-				$dispatcher->output( $collector );
+			$outputters = apply_filters( "qm/outputter/{$dispatcher->id}", array(), $collectors );
+
+			foreach ( $outputters as $outputter ) {
+				$outputter->output();
 			}
 
 			$dispatcher->after_output();
@@ -205,7 +197,9 @@ class QueryMonitor extends QM_Plugin {
 
 		load_plugin_textdomain( 'query-monitor', false, dirname( $this->plugin_base() ) . '/languages' );
 
-		foreach ( $this->get_dispatchers() as $dispatcher ) {
+		$dispatchers = QM_Dispatchers::init();
+
+		foreach ( $dispatchers as $dispatcher ) {
 			$dispatcher->init();
 		}
 

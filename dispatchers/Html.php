@@ -172,7 +172,7 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 
 		if ( !is_admin() ) {
 			$absolute = function_exists( 'twentyfifteen_setup' );
-			if ( apply_filters( 'query_monitor_absolute_position', $absolute ) ) {
+			if ( apply_filters( 'qm/output/absolute_position', $absolute ) ) {
 				$class[] = 'qm-absolute';
 			}
 		}
@@ -236,14 +236,10 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 
 	}
 
-	public function get_outputter( QM_Collector $collector ) {
-		return new QM_Output_Html( $collector );
-	}
-
 	public function js_admin_bar_menu() {
 
-		$class = implode( ' ', apply_filters( 'query_monitor_class', array() ) );
-		$title = implode( '&nbsp;&nbsp;&nbsp;', apply_filters( 'query_monitor_title', array() ) );
+		$class = implode( ' ', apply_filters( 'qm/output/menu_class', array() ) );
+		$title = implode( '&nbsp;&nbsp;&nbsp;', apply_filters( 'qm/output/title', array() ) );
 
 		if ( empty( $title ) ) {
 			$title = __( 'Query Monitor', 'query-monitor' );
@@ -257,7 +253,7 @@ class QM_Dispatcher_Html extends QM_Dispatcher {
 			'sub' => array()
 		);
 
-		foreach ( apply_filters( 'query_monitor_menus', array() ) as $menu ) {
+		foreach ( apply_filters( 'qm/output/menus', array() ) as $menu ) {
 			$admin_bar_menu['sub'][] = $menu;
 		}
 
@@ -290,4 +286,4 @@ function register_qm_dispatcher_html( array $dispatchers, QM_Plugin $qm ) {
 	return $dispatchers;
 }
 
-add_filter( 'query_monitor_dispatchers', 'register_qm_dispatcher_html', 10, 2 );
+add_filter( 'qm/dispatchers', 'register_qm_dispatcher_html', 10, 2 );

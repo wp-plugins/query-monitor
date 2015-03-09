@@ -61,6 +61,15 @@ class QM_Util {
 	}
 
 	public static function get_file_dirs() {
+		if ( empty( self::$file_dirs ) ) {
+			self::$file_dirs['plugin']     = self::standard_dir( WP_PLUGIN_DIR );
+			self::$file_dirs['mu-plugin']  = self::standard_dir( WPMU_PLUGIN_DIR );
+			self::$file_dirs['vip-plugin'] = self::standard_dir( get_theme_root() . '/vip/plugins' );
+			self::$file_dirs['stylesheet'] = self::standard_dir( get_stylesheet_directory() );
+			self::$file_dirs['template']   = self::standard_dir( get_template_directory() );
+			self::$file_dirs['other']      = self::standard_dir( WP_CONTENT_DIR );
+			self::$file_dirs['core']       = self::standard_dir( ABSPATH );
+		}
 		return self::$file_dirs;
 	}
 
@@ -72,16 +81,7 @@ class QM_Util {
 			return self::$file_components[$file];
 		}
 
-		if ( empty( self::$file_dirs ) ) {
-			self::$file_dirs['plugin']     = self::standard_dir( WP_PLUGIN_DIR );
-			self::$file_dirs['muplugin']   = self::standard_dir( WPMU_PLUGIN_DIR );
-			self::$file_dirs['stylesheet'] = self::standard_dir( get_stylesheet_directory() );
-			self::$file_dirs['template']   = self::standard_dir( get_template_directory() );
-			self::$file_dirs['other']      = self::standard_dir( WP_CONTENT_DIR );
-			self::$file_dirs['core']       = self::standard_dir( ABSPATH );
-		}
-
-		foreach ( self::$file_dirs as $type => $dir ) {
+		foreach ( self::get_file_dirs() as $type => $dir ) {
 			if ( 0 === strpos( $file, $dir ) ) {
 				break;
 			}
@@ -91,7 +91,7 @@ class QM_Util {
 
 		switch ( $type ) {
 			case 'plugin':
-			case 'muplugin':
+			case 'mu-plugin':
 				$plug = plugin_basename( $file );
 				if ( strpos( $plug, '/' ) ) {
 					$plug = explode( '/', $plug );
@@ -102,8 +102,24 @@ class QM_Util {
 				$name    = sprintf( __( 'Plugin: %s', 'query-monitor' ), $plug );
 				$context = $plug;
 				break;
+			case 'vip-plugin':
+				$plug = str_replace( self::$file_dirs['vip-plugin'], '', $file );
+				$plug = trim( $plug, '/' );
+				if ( strpos( $plug, '/' ) ) {
+					$plug = explode( '/', $plug );
+					$plug = reset( $plug );
+				} else {
+					$plug = basename( $plug );
+				}
+				$name    = sprintf( __( 'VIP Plugin: %s', 'query-monitor' ), $plug );
+				$context = $plug;
+				break;
 			case 'stylesheet':
-				$name = __( 'Theme', 'query-monitor' );
+				if ( is_child_theme() ) {
+					$name = __( 'Child Theme', 'query-monitor' );
+				} else {
+					$name = __( 'Theme', 'query-monitor' );
+				}
 				break;
 			case 'template':
 				$name = __( 'Parent Theme', 'query-monitor' );
@@ -148,7 +164,7 @@ class QM_Util {
 
 				$ref  = new ReflectionFunction( $callback['function'] );
 				$file = trim( QM_Util::standard_dir( $ref->getFileName(), '' ), '/' );
-				$callback['name'] = sprintf( __( '{closure}() on line %1$d of %2$s', 'query-monitor' ), $ref->getEndLine(), $file );
+				$callback['name'] = sprintf( __( 'Closure on line %1$d of %2$s', 'query-monitor' ), $ref->getStartLine(), $file );
 
 			} else {
 
@@ -157,9 +173,19 @@ class QM_Util {
 
 			}
 
-			$callback['file']      = $ref->getFileName();
-			$callback['line']      = $ref->getStartLine();
-			$callback['component'] = self::get_file_component( $ref->getFileName() );
+			$callback['file'] = $ref->getFileName();
+			$callback['line'] = $ref->getStartLine();
+
+			if ( '__lambda_func' === $ref->getName() ) {
+				if ( preg_match( '|(?P<file>.*)\((?P<line>[0-9]+)\)|', $callback['file'], $matches ) ) {
+					$callback['file'] = $matches['file'];
+					$callback['line'] = $matches['line'];
+					$file = trim( QM_Util::standard_dir( $callback['file'], '' ), '/' );
+					$callback['name'] = sprintf( __( 'Anonymous function on line %1$d of %2$s', 'query-monitor' ), $callback['line'], $file );
+				}
+			}
+
+			$callback['component'] = self::get_file_component( $callback['file'] );
 
 		} catch ( ReflectionException $e ) {
 
@@ -220,6 +246,21 @@ class QM_Util {
 
 		}
 
+	}
+
+	public static function is_multi_network() {
+		global $wpdb;
+
+		if ( ! is_multisite() ) {
+			return false;
+		}
+
+		$num_sites = $wpdb->get_var( "
+			SELECT COUNT(*)
+			FROM {$wpdb->site}
+		" );
+
+		return ( $num_sites > 1 );
 	}
 
 }

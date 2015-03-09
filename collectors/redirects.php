@@ -45,9 +45,5 @@ class QM_Collector_Redirects extends QM_Collector {
 
 }
 
-function register_qm_collector_redirects( array $qm ) {
-	$qm['redirects'] = new QM_Collector_Redirects;
-	return $qm;
-}
-
-add_filter( 'query_monitor_collectors', 'register_qm_collector_redirects', 140 );
+# Load early in case a plugin is doing a redirect when it initialises instead of after the `plugins_loaded` hook
+QM_Collectors::add( new QM_Collector_Redirects );

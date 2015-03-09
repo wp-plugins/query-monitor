@@ -1,9 +1,9 @@
 === Query Monitor ===
 Contributors: johnbillion
-Tags: debug, debugging, development, developer, performance, profiler, profiling, queries, query monitor
+Tags: debug, debug-bar, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
-Tested up to: 4.1
-Stable tag: 2.6.10
+Tested up to: 4.1.1
+Stable tag: 2.7.0
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
@@ -31,7 +31,7 @@ Filtering queries by component or calling function makes it easy to see which pl
 
 = Hooks =
 
- * Shows all hooks fired on the current page, along with hooked actions and their priorities
+ * Shows all hooks fired on the current page, along with hooked actions, their priorities, and their components
  * Filter hooks by **part of their name**
  * Filter actions by **component** (WordPress core, Plugin X, Plugin Y, theme)
 
@@ -51,6 +51,12 @@ Filtering queries by component or calling function makes it easy to see which pl
  * Shows **matched rewrite rules** and associated query strings
  * Shows **query vars** for the current request, and highlights **custom query vars**
  * Shows the **queried object** details (collapsed by default)
+ * Shows details of the **current blog** (multisite only) and **current site** (multi-network only)
+
+= Scripts & Styles =
+
+ * Shows all **enqueued scripts and styles** on the current page, along with their URL and version
+ * Shows their **dependencies and dependents**, and alerts you to any **broken dependencies**
 
 = HTTP Requests =
 
@@ -89,7 +95,7 @@ Hands up who can remember the correct names for the filters and actions for cust
  * Shows any **transients that were set**, along with their timeout, component, and call stack
  * Shows all **WordPress conditionals** on the current page, highlighted nicely
  * Shows an overview including page generation time and memory limit as absolute values and as % of their respective limits
- * Shows all *scripts and styles* which were enqueued on the current page, along with their path, dependencies, and version number
+ * Shows all *scripts and styles* which were enqueued on the current page, along with their URL, dependencies, dependents, and version number
 
 = Authentication =
 
@@ -136,7 +142,9 @@ On pages that have an especially high number of database queries (in the hundred
 
 = Are there any add-on plugins for Query Monitor? =
 
-Yep, the first one was released recently: [Query Monitor bbPress & BuddyPress Conditionals](https://wordpress.org/plugins/query-monitor-bbpress-buddypress-conditionals/) by Stephen Edgar.
+Query Monitor transparently supports add-ons for the Debug Bar plugin. If you have any Debug Bar add-ons installed, just deactivate Debug Bar and the add-ons will show up in Query Monitor's menu.
+
+There's also [Query Monitor bbPress & BuddyPress Conditionals](https://wordpress.org/plugins/query-monitor-bbpress-buddypress-conditionals/) by Stephen Edgar.
 
 = Where can I suggest a new feature or report a bug? =
 
@@ -146,12 +154,24 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](https://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
-== Upgrade Notice ==
-
-= 2.6.10 =
-* Fix some PHP 5.2 compatibility issues introduced in 2.6.9; More tweaks to the CSS so QM avoids being covered up by the admin menu.
-
 == Changelog ==
+
+= 2.7.0 =
+* Detect broken dependencies for scripts and styles.
+* Calculate and output the dependents of scripts and styles.
+* Add transparent support for Debug Bar add-on panels.
+* Add support for WordPress.com VIP plugins in the component detection.
+* Sortable and filterable columns for HTTP requests.
+* Display a warning when something's hooked onto the `all` action.
+* Clearer output for the template file and component names when a child theme is in use.
+* Move the current blog information to the Request component. Display current site information if we're running a multi-network.
+* Allow default error handlers, such as error logging, to continue to function as expected.
+* Don't skip outputting the calling function name in the database error list.
+* New namespaced filter names for a bunch of filterable things.
+* Add a `qm/process` filter to allow users to disable QM's processing and output.
+* Display the value of `WP_HTTP_BLOCK_EXTERNAL` and `WP_ACCESSIBLE_HOSTS` in the HTTP component.
+* New storage and registration mechanisms for collectors, dispatchers, and output handlers.
+* CSS tweaks to better match wp-admin styles.
 
 = 2.6.10 =
 * Add compatibility with PHP <5.3.6. `DirectoryIterator::getExtension()` isn't available on this version (and also as it's part of SPL it can be disabled).
@@ -159,7 +179,6 @@ No, I do not accept donations. If you like the plugin, I'd love for you to [leav
 * Add support for footer styles in the scripts and styles component.
 * Update the authentication JavaScript so it works cross-protocol.
 * Add support for footer styles in the scripts and styles component.
-* Update the authentication JavaScript so it works cross-protocol.
 
 = 2.6.9 =
 * New Scripts & Styles component

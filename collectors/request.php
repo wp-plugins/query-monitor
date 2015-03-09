@@ -24,9 +24,17 @@ class QM_Collector_Request extends QM_Collector {
 
 	public function process() {
 
-		global $wp, $wp_query;
+		global $wp, $wp_query, $current_blog, $current_site;
 
 		$qo = get_queried_object();
+
+		if ( is_multisite() ) {
+			$this->data['multisite']['current_blog'] = $current_blog;
+		}
+
+		if ( QM_Util::is_multi_network() ) {
+			$this->data['multisite']['current_site'] = $current_site;
+		}
 
 		if ( is_admin() ) {
 			$this->data['request']['request'] = $_SERVER['REQUEST_URI'];
@@ -125,9 +133,9 @@ class QM_Collector_Request extends QM_Collector {
 
 }
 
-function register_qm_collector_request( array $qm ) {
-	$qm['request'] = new QM_Collector_Request;
-	return $qm;
+function register_qm_collector_request( array $collectors, QueryMonitor $qm ) {
+	$collectors['request'] = new QM_Collector_Request;
+	return $collectors;
 }
 
-add_filter( 'query_monitor_collectors', 'register_qm_collector_request', 60 );
+add_filter( 'qm/collectors', 'register_qm_collector_request', 10, 2 );

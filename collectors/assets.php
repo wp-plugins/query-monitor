@@ -24,24 +24,73 @@ class QM_Collector_Assets extends QM_Collector {
 		add_action( 'wp_print_footer_scripts',    array( $this, 'action_print_footer_scripts' ) );
 		add_action( 'admin_head',                 array( $this, 'action_head' ), 999 );
 		add_action( 'wp_head',                    array( $this, 'action_head' ), 999 );
+		add_action( 'login_head',                 array( $this, 'action_head' ), 999 );
 	}
 
 	public function action_head() {
 		global $wp_scripts, $wp_styles;
 
-		$this->data['header_styles'] = $wp_styles->done;
-		$this->data['header_scripts'] = $wp_scripts->done;
+		$this->data['header']['styles'] = $wp_styles->done;
+		$this->data['header']['scripts'] = $wp_scripts->done;
 
 	}
 
 	public function action_print_footer_scripts() {
 		global $wp_scripts, $wp_styles;
 
-		$this->data['raw_scripts'] = $wp_scripts;
-		$this->data['raw_styles']  = $wp_styles;
+		// @TODO remove the need for these raw scripts & styles to be collected
+		$this->data['raw']['scripts'] = $wp_scripts;
+		$this->data['raw']['styles']  = $wp_styles;
 
-		$this->data['footer_scripts'] = array_diff( $wp_scripts->done, $this->data['header_scripts'] );
-		$this->data['footer_styles']  = array_diff( $wp_styles->done, $this->data['header_styles'] );
+		$this->data['footer']['scripts'] = array_diff( $wp_scripts->done, $this->data['header']['scripts'] );
+		$this->data['footer']['styles']  = array_diff( $wp_styles->done, $this->data['header']['styles'] );
+
+	}
+
+	public function process() {
+		if ( !isset( $this->data['raw'] ) ) {
+			return;
+		}
+
+		foreach ( array( 'scripts', 'styles' ) as $type ) {
+			foreach ( array( 'header', 'footer' ) as $position ) {
+				if ( empty( $this->data[ $position ][ $type ] ) ) {
+					$this->data[ $position ][ $type ] = array();
+				} else {
+					sort( $this->data[ $position ][ $type ] );
+				}
+			}
+			$raw = $this->data['raw'][ $type ];
+			$broken = array_diff( $raw->queue, $raw->done );
+
+			if ( !empty( $broken ) ) {
+				foreach ( $broken as $handle ) {
+					$item   = $raw->query( $handle );
+					$broken = array_merge( $broken, $this->get_broken_dependencies( $item, $raw ) );
+				}
+
+				$this->data['broken'][ $type ] = array_unique( $broken );
+				sort( $this->data['broken'][ $type ] );
+			}
+
+		}
+	}
+
+	protected function get_broken_dependencies( _WP_Dependency $item, WP_Dependencies $dependencies ) {
+
+		$broken = array();
+
+		foreach ( $item->deps as $handle ) {
+
+			if ( $dep = $dependencies->query( $handle ) ) {
+				$broken = array_merge( $broken, $this->get_broken_dependencies( $dep, $dependencies ) );
+			} else {
+				$broken[] = $item->handle;
+			}
+
+		}
+
+		return $broken;
 
 	}
 
@@ -51,9 +100,9 @@ class QM_Collector_Assets extends QM_Collector {
 
 }
 
-function register_qm_collector_assets( array $qm ) {
-	$qm['assets'] = new QM_Collector_Assets;
-	return $qm;
+function register_qm_collector_assets( array $collectors, QueryMonitor $qm ) {
+	$collectors['assets'] = new QM_Collector_Assets;
+	return $collectors;
 }
 
-add_filter( 'query_monitor_collectors', 'register_qm_collector_assets', 80 );
+add_filter( 'qm/collectors', 'register_qm_collector_assets', 10, 2 );

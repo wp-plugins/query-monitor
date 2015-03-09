@@ -18,7 +18,7 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 100 );
+		add_filter( 'qm/output/menus', array( $this, 'admin_menu' ), 110 );
 	}
 
 	public function output() {
@@ -238,19 +238,13 @@ class QM_Output_Html_Environment extends QM_Output_Html {
 
 	}
 
-	public function admin_menu( array $menu ) {
+}
 
-		$menu[] = $this->menu( array(
-			'title' => __( 'Environment', 'query-monitor' )
-		) );
-		return $menu;
-
+function register_qm_output_html_environment( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'environment' ) ) {
+		$output['environment'] = new QM_Output_Html_Environment( $collector );
 	}
-
+	return $output;
 }
 
-function register_qm_output_html_environment( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_Environment( $collector );
-}
-
-add_filter( 'query_monitor_output_html_environment', 'register_qm_output_html_environment', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_environment', 120, 2 );

@@ -18,14 +18,14 @@ class QM_Output_Html_Admin extends QM_Output_Html {
 
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 60 );
+		add_filter( 'qm/output/menus', array( $this, 'admin_menu' ), 60 );
 	}
 
 	public function output() {
 
 		$data = $this->collector->get_data();
 
-		if ( empty( $data ) ) {
+		if ( empty( $data['current_screen'] ) ) {
 			return;
 		}
 
@@ -122,19 +122,13 @@ class QM_Output_Html_Admin extends QM_Output_Html {
 
 	}
 
-	public function admin_menu( array $menu ) {
+}
 
-		$menu[] = $this->menu( array(
-			'title' => __( 'Admin Screen', 'query-monitor' ),
-		) );
-		return $menu;
-
+function register_qm_output_html_admin( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'admin' ) ) {
+		$output['admin'] = new QM_Output_Html_Admin( $collector );
 	}
-
+	return $output;
 }
 
-function register_qm_output_html_admin( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_Admin( $collector );
-}
-
-add_filter( 'query_monitor_output_html_admin', 'register_qm_output_html_admin', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_admin', 70, 2 );

@@ -58,9 +58,5 @@ class QM_Collector_Transients extends QM_Collector {
 
 }
 
-function register_qm_collector_transients( array $qm ) {
-	$qm['transients'] = new QM_Collector_Transients;
-	return $qm;
-}
-
-add_filter( 'query_monitor_collectors', 'register_qm_collector_transients', 90 );
+# Load early in case a plugin is setting transients when it initialises instead of after the `plugins_loaded` hook
+QM_Collectors::add( new QM_Collector_Transients );

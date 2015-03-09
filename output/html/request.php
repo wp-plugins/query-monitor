@@ -18,7 +18,7 @@ class QM_Output_Html_Request extends QM_Output_Html {
 
 	public function __construct( QM_Collector $collector ) {
 		parent::__construct( $collector );
-		add_filter( 'query_monitor_menus', array( $this, 'admin_menu' ), 50 );
+		add_filter( 'qm/output/menus', array( $this, 'admin_menu' ), 50 );
 	}
 
 	public function output() {
@@ -99,6 +99,34 @@ class QM_Output_Html_Request extends QM_Output_Html {
 
 		}
 
+		if ( !empty( $data['multisite'] ) ) {
+
+			$rowspan = count( $data['multisite'] );
+
+			echo '<tr>';
+			echo '<td rowspan="' . $rowspan . '">' . __( 'Multisite', 'query-monitor' ) . '</td>';
+
+			$first = true;
+
+			foreach( $data['multisite'] as $var => $value ) {
+
+				if ( !$first ) {
+					echo '<tr>';
+				}
+
+				echo "<td valign='top'>{$var}</td>";
+
+				echo '<td valign="top"><pre>';
+				print_r( $value );
+				echo '</pre></td>';
+
+				echo '</tr>';
+
+				$first = false;
+
+			}
+		}
+
 		if ( !empty( $data['queried_object'] ) ) {
 
 			$vars = get_object_vars( $data['queried_object'] );
@@ -141,8 +169,11 @@ class QM_Output_Html_Request extends QM_Output_Html {
 
 }
 
-function register_qm_output_html_request( QM_Output $output = null, QM_Collector $collector ) {
-	return new QM_Output_Html_Request( $collector );
+function register_qm_output_html_request( array $output, QM_Collectors $collectors ) {
+	if ( $collector = $collectors::get( 'request' ) ) {
+		$output['request'] = new QM_Output_Html_Request( $collector );
+	}
+	return $output;
 }
 
-add_filter( 'query_monitor_output_html_request', 'register_qm_output_html_request', 10, 2 );
+add_filter( 'qm/outputter/html', 'register_qm_output_html_request', 60, 2 );

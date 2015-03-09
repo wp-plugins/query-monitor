@@ -26,7 +26,9 @@ class QM_Collector_Hooks extends QM_Collector {
 
 		global $wp_actions, $wp_filter;
 
-		if ( is_admin() and ( $admin = QueryMonitor::get_collector( 'admin' ) ) ) {
+		$this->hide_qm = ( defined( 'QM_HIDE_SELF' ) and QM_HIDE_SELF );
+
+		if ( is_admin() and ( $admin = QM_Collectors::get( 'admin' ) ) ) {
 			$this->data['screen'] = $admin->data['base'];
 		} else {
 			$this->data['screen'] = '';
@@ -34,53 +36,19 @@ class QM_Collector_Hooks extends QM_Collector {
 
 		$hooks = $all_parts = $components = array();
 
-		$hide_qm = ( defined( 'QM_HIDE_SELF' ) and QM_HIDE_SELF );
+		if ( has_filter( 'all' ) ) {
+
+			$hooks['all'] = $this->process_action( 'all', $wp_filter );
+			$this->data['warnings']['all_hooked'] = $hooks['all'];
+
+		}
 
 		foreach ( $wp_actions as $name => $count ) {
 
-			$actions = array();
-			$action_components = array();
+			$hooks[$name] = $this->process_action( $name, $wp_filter );
 
-			if ( isset( $wp_filter[$name] ) ) {
-
-				# http://core.trac.wordpress.org/ticket/17817
-				$action = $wp_filter[$name];
-
-				foreach ( $action as $priority => $callbacks ) {
-
-					foreach ( $callbacks as $callback ) {
-
-						$callback = QM_Util::populate_callback( $callback );
-
-						if ( isset( $callback['component'] ) ) {
-							if ( $hide_qm and ( 'query-monitor' === $callback['component']->context ) ) {
-								continue;
-							}
-
-							$action_components[$callback['component']->name] = $callback['component']->name;
-						}
-
-						$actions[] = array(
-							'priority'  => $priority,
-							'callback'  => $callback,
-						);
-
-					}
-
-				}
-
-			}
-
-			$action_parts = array_filter( preg_split( '#[_/-]#', $name ) );
-			$all_parts    = array_merge( $all_parts, $action_parts );
-			$components   = array_merge( $components, $action_components );
-
-			$hooks[$name] = array(
-				'name'    => $name,
-				'actions' => $actions,
-				'parts'   => $action_parts,
-				'components' => $action_components,
-			);
+			$all_parts    = array_merge( $all_parts, $hooks[$name]['parts'] );
+			$components   = array_merge( $components, $hooks[$name]['components'] );
 
 		}
 
@@ -90,11 +58,56 @@ class QM_Collector_Hooks extends QM_Collector {
 
 	}
 
+	protected function process_action( $name, array $wp_filter ) {
+
+		$actions = $components = array();
+
+		if ( isset( $wp_filter[$name] ) ) {
+
+			# http://core.trac.wordpress.org/ticket/17817
+			$action = $wp_filter[$name];
+
+			foreach ( $action as $priority => $callbacks ) {
+
+				foreach ( $callbacks as $callback ) {
+
+					$callback = QM_Util::populate_callback( $callback );
+
+					if ( isset( $callback['component'] ) ) {
+						if ( $this->hide_qm and ( 'query-monitor' === $callback['component']->context ) ) {
+							continue;
+						}
+
+						$components[$callback['component']->name] = $callback['component']->name;
+					}
+
+					$actions[] = array(
+						'priority'  => $priority,
+						'callback'  => $callback,
+					);
+
+				}
+
+			}
+
+		}
+
+		$parts = array_filter( preg_split( '#[_/-]#', $name ) );
+
+		return array(
+			'name'       => $name,
+			'actions'    => $actions,
+			'parts'      => $parts,
+			'components' => $components,
+		);
+
+	}
+
 }
 
-function register_qm_collector_hooks( array $qm ) {
-	$qm['hooks'] = new QM_Collector_Hooks;
-	return $qm;
+function register_qm_collector_hooks( array $collectors, QueryMonitor $qm ) {
+	$collectors['hooks'] = new QM_Collector_Hooks;
+	return $collectors;
 }
 
-add_filter( 'query_monitor_collectors', 'register_qm_collector_hooks', 80 );
+add_filter( 'qm/collectors', 'register_qm_collector_hooks', 20, 2 );

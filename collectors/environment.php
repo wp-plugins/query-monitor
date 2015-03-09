@@ -36,7 +36,7 @@ class QM_Collector_Environment extends QM_Collector {
 
 		parent::__construct();
 
-		# If QueryMonitorDB is in place then we'll use the values which were
+		# If QM_DB is in place then we'll use the values which were
 		# caught early before any plugins had a chance to alter them
 
 		foreach ( $this->php_vars as $setting ) {
@@ -88,7 +88,7 @@ class QM_Collector_Environment extends QM_Collector {
 
 	public function process() {
 
-		global $wp_version, $blog_id;
+		global $wp_version;
 
 		$mysql_vars = array(
 			'key_buffer_size'    => true,  # Key cache size limit
@@ -99,13 +99,9 @@ class QM_Collector_Environment extends QM_Collector {
 			'query_cache_type'   => 'ON'   # Query cache on or off
 		);
 
-		if ( $dbq = QueryMonitor::get_collector( 'db_queries' ) ) {
+		if ( $dbq = QM_Collectors::get( 'db_queries' ) ) {
 
 			foreach ( $dbq->db_objects as $id => $db ) {
-
-				if ( !is_a( $db, 'wpdb' ) ) {
-					continue;
-				}
 
 				$variables = $db->get_results( "
 					SHOW VARIABLES
@@ -158,6 +154,7 @@ class QM_Collector_Environment extends QM_Collector {
 			'WP_DEBUG_DISPLAY'    => self::format_bool_constant( 'WP_DEBUG_DISPLAY' ),
 			'WP_DEBUG_LOG'        => self::format_bool_constant( 'WP_DEBUG_LOG' ),
 			'SCRIPT_DEBUG'        => self::format_bool_constant( 'SCRIPT_DEBUG' ),
+			'WP_CACHE'            => self::format_bool_constant( 'WP_CACHE' ),
 			'CONCATENATE_SCRIPTS' => self::format_bool_constant( 'CONCATENATE_SCRIPTS' ),
 			'COMPRESS_SCRIPTS'    => self::format_bool_constant( 'COMPRESS_SCRIPTS' ),
 			'COMPRESS_CSS'        => self::format_bool_constant( 'COMPRESS_CSS' ),
@@ -165,7 +162,7 @@ class QM_Collector_Environment extends QM_Collector {
 		);
 
 		if ( is_multisite() ) {
-			$this->data['wp']['blog_id'] = $blog_id;
+			$this->data['wp']['SUNRISE'] = self::format_bool_constant( 'SUNRISE' );
 		}
 
 		$server = explode( ' ', $_SERVER['SERVER_SOFTWARE'] );
@@ -227,9 +224,9 @@ class QM_Collector_Environment extends QM_Collector {
 
 }
 
-function register_qm_collector_environment( array $qm ) {
-	$qm['environment'] = new QM_Collector_Environment;
-	return $qm;
+function register_qm_collector_environment( array $collectors, QueryMonitor $qm ) {
+	$collectors['environment'] = new QM_Collector_Environment;
+	return $collectors;
 }
 
-add_filter( 'query_monitor_collectors', 'register_qm_collector_environment', 120 );
+add_filter( 'qm/collectors', 'register_qm_collector_environment', 20, 2 );
