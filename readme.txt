@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debug-bar, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 2.7.0
+Stable tag: 2.7.1
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
@@ -155,6 +155,16 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](https://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.7.1 =
+* Display a warning (rather than triggering a fatal error) for scripts and style dependencies which have gone missing during the duration of the page load.
+* Tweak some more Debug Bar add-on styles.
+* Ensure erroneous non-SELECT queries are also highlighted in red.
+* Further tweaks to QM's output if JavaScript isn't available for any reason.
+* Add PHP4-style constructors to the Debug Bar classes to avoid fatals with Debug Bar add-ons which are explicitly using them.
+* In the event that QM's JavaScript doesn't get enqueued, force the QM output to display so users can at least debug the issue.
+* Remove the abstract `output()` methods from abstract classes which implement `QM_Output` to avoid PHP bug #43200.
+* Fixing a notice in the admin component when `get_current_screen()` isn't an object.
 
 = 2.7.0 =
 * Detect broken dependencies for scripts and styles.
