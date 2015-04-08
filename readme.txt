@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debug-bar, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
 Tested up to: 4.1.1
-Stable tag: 2.7.1
+Stable tag: 2.7.2
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
@@ -155,6 +155,13 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](https://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.7.2 =
+* Implement a shutdown handler for PHP errors to avoid fatals being unintentionally hidden when `display_errors` is on.
+* Don't attempt to do anything with scripts and styles if a corresponding header action hasn't fired.
+* Don't sort the enqueued scripts and styles, so they're output in the order in which they're enqueued.
+* For the time being, let's not load QM when using the CLI because we've no persistent storage and no means of outputting collected data on the CLI.
+* Call static methods using their class name, not a variable. Fixes compatibility with PHP 5.2.
 
 = 2.7.1 =
 * Display a warning (rather than triggering a fatal error) for scripts and style dependencies which have gone missing during the duration of the page load.

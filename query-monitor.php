@@ -2,7 +2,7 @@
 /*
 Plugin Name: Query Monitor
 Description: Monitoring of database queries, hooks, conditionals and more.
-Version:     2.7.1
+Version:     2.7.2
 Plugin URI:  https://querymonitor.com/
 Author:      John Blackbourn
 Author URI:  https://johnblackbourn.com/
@@ -27,6 +27,12 @@ GNU General Public License for more details.
 defined( 'ABSPATH' ) or die();
 
 if ( defined( 'QM_DISABLED' ) and QM_DISABLED ) {
+	return;
+}
+
+if ( 'cli' == php_sapi_name() ) {
+	# For the time being, let's not load QM when using the CLI because we've no persistent storage and no means of
+	# outputting collected data on the CLI. This will change in a future version of QM.
 	return;
 }
 
