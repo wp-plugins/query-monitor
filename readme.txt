@@ -2,8 +2,8 @@
 Contributors: johnbillion
 Tags: debug, debug-bar, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
-Tested up to: 4.1.1
-Stable tag: 2.7.2
+Tested up to: 4.2
+Stable tag: 2.7.3
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
@@ -155,6 +155,9 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](https://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.7.3 =
+* Improvements to the shutdown handler for PHP errors, so it handles syntax and compilation errors too.
 
 = 2.7.2 =
 * Implement a shutdown handler for PHP errors to avoid fatals being unintentionally hidden when `display_errors` is on.
