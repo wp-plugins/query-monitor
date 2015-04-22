@@ -3,7 +3,7 @@ Contributors: johnbillion
 Tags: debug, debug-bar, debugging, development, developer, performance, profiler, profiling, queries, query monitor
 Requires at least: 3.5
 Tested up to: 4.2
-Stable tag: 2.7.3
+Stable tag: 2.7.4
 License: GPLv2 or later
 
 View debugging and performance information on database queries, hooks, conditionals, HTTP requests, redirects and more.
@@ -155,6 +155,12 @@ Please use [the issue tracker on Query Monitor's GitHub repo](https://github.com
 No, I do not accept donations. If you like the plugin, I'd love for you to [leave a review](https://wordpress.org/support/view/plugin-reviews/query-monitor). Tell all your friends about the plugin too!
 
 == Changelog ==
+
+= 2.7.4 =
+* An unknown component now gets marked as such, not as Core.
+* Support for invokable objects in action and filter callbacks.
+* Fix fatal error when activating Debug Bar plugin after Query Monitor has already been activated.
+* Implement escaping inside `QM_Output_Html::format_url()` which can deal with unsafe output. Thanks to Stephen Harris for the responsible disclosure.
 
 = 2.7.3 =
 * Improvements to the shutdown handler for PHP errors, so it handles syntax and compilation errors too.
